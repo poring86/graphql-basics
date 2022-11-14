@@ -51,7 +51,7 @@ const users = [
 const typeDefs = `
     type Query{
       users(query: String): [User!]!
-      posts: [Post!]!
+      posts(query: String): [Post!]!
       greeting(name: String, position: String): String!
       add(numbers: [Float!]!): Float!
       grades: [Int!]!
@@ -93,9 +93,21 @@ const resolvers = {
       }
     },
     posts(parent, args, ctx, info) {
+      console.log("args", args);
       if (!args.query) {
         return posts;
       }
+
+      return posts.filter((post) => {
+        const isTitleMatch = post.title
+          .toLowerCase()
+          .includes(args.query.toLowerCase());
+        const isBodyMatch = post.body
+          .toLowerCase()
+          .includes(args.query.toLowerCase());
+
+        return isTitleMatch || isBodyMatch;
+      });
     },
     add(parent, args, ctx, info) {
       console.log("args", args.numbers);
