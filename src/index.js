@@ -6,24 +6,28 @@ const posts = [
     title: "Post 1",
     body: "body 1",
     published: true,
+    author: "1",
   },
   {
     id: "2",
     title: "Post 2",
     body: "body 2",
     published: true,
+    author: "1",
   },
   {
     id: "3",
     title: "Post 3",
     body: "body 3",
     published: true,
+    author: "1",
   },
   {
     id: "4",
     title: "Post 4",
     body: "body 4",
     published: true,
+    author: "2",
   },
 ];
 
@@ -71,6 +75,7 @@ const typeDefs = `
       title: String!
       body: String!
       publisher: String!
+      author: User!
     }
 `;
 
@@ -93,7 +98,6 @@ const resolvers = {
       }
     },
     posts(parent, args, ctx, info) {
-      console.log("args", args);
       if (!args.query) {
         return posts;
       }
@@ -140,6 +144,13 @@ const resolvers = {
         body: "",
         published: false,
       };
+    },
+  },
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author;
+      });
     },
   },
 };
