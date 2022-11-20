@@ -1,5 +1,32 @@
 import { createServer } from "@graphql-yoga/node";
 
+const comments = [
+  {
+    id: "1",
+    text: "Comment",
+    author: "1",
+    post: "1",
+  },
+  {
+    id: "2",
+    text: "Comment",
+    author: "1",
+    post: "1",
+  },
+  {
+    id: "3",
+    text: "Comment",
+    author: "1",
+    post: "1",
+  },
+  {
+    id: "4",
+    text: "Comment",
+    author: "1",
+    post: "1",
+  },
+];
+
 const posts = [
   {
     id: "1",
@@ -61,6 +88,7 @@ const typeDefs = `
       grades: [Int!]!
       me: User!
       post: Post!
+      comments: [Comment!]!
     }
 
     type User{
@@ -69,15 +97,24 @@ const typeDefs = `
       email: String!
       age: Int
       posts: [Post!]!
+      comments: [Comment]
     }
 
-    type Post{
+    type Post {
       id: ID!
       title: String!
       body: String!
-      publisher: String!
+      published: Boolean!
       author: User!
-    }
+      comments: [Comment!]!
+  }
+
+    type Comment {
+      id: ID!
+      text: String!
+      author: User!
+      post: Post!
+  }
 `;
 
 const resolvers = {
@@ -113,6 +150,9 @@ const resolvers = {
 
         return isTitleMatch || isBodyMatch;
       });
+    },
+    comments(parent, args, ctx, info) {
+      return comments;
     },
     add(parent, args, ctx, info) {
       console.log("args", args.numbers);
@@ -153,11 +193,35 @@ const resolvers = {
         return user.id === parent.author;
       });
     },
+    comments(parent, args, ctx, info) {
+      // return comments;
+      return comments.filter((comment) => {
+        // return parent.id === comment.post;
+        return comment.post === parent.id;
+      });
+    },
   },
   User: {
     posts(parent, args, ctx, info) {
       return posts.filter((post) => {
         return post.author === parent.id;
+      });
+    },
+    comments(parent, args, ctx, info) {
+      return comments.filter((comment) => {
+        return comment.author === parent.id;
+      });
+    },
+  },
+  Comment: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author;
+      });
+    },
+    post(parent, args, ctx, info) {
+      return posts.find((post) => {
+        return post.id === parent.post;
       });
     },
   },
