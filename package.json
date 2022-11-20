@@ -13,7 +13,8 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "graphql": "^16.6.0",
-    "graphql-yoga": "^2.13.13"
+    "graphql-yoga": "^2.13.13",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"
