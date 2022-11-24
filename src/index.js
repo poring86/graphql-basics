@@ -1,7 +1,7 @@
 import { createServer } from "@graphql-yoga/node";
 import { v4 as uuidv4 } from "uuid";
 
-const comments = [
+let comments = [
   {
     id: "1",
     text: "Comment",
@@ -28,7 +28,7 @@ const comments = [
   },
 ];
 
-const posts = [
+let posts = [
   {
     id: "1",
     title: "Post 1",
@@ -59,7 +59,7 @@ const posts = [
   },
 ];
 
-const users = [
+let users = [
   {
     id: "1",
     name: "Matheus",
@@ -190,7 +190,7 @@ const resolvers = {
       const value = args.numbers.reduce((accumulator, currentValue) => {
         return accumulator + currentValue;
       });
-      console.log("value", value);
+
       return value;
     },
     me() {
@@ -237,6 +237,20 @@ const resolvers = {
       }
 
       const deletedUser = users.splice(userIndex, 1);
+
+      posts = posts.filter((post) => {
+        const match = post.author === args.id;
+
+        if (match) {
+          return (comments = comments.filter(
+            (comment) => comment.post !== post.id
+          ));
+        }
+
+        return !match;
+      });
+
+      comments = comments.filter((comment) => comment.author !== args.id);
 
       return deletedUser[0];
     },
