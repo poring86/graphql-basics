@@ -237,6 +237,8 @@ const resolvers = {
       }
 
       const deletedUser = users.splice(userIndex, 1);
+
+      return deletedUser[0];
     },
     createPost(parent, args, ctx, info) {
       const userExists = users.some((user) => user.id === args.data.author);
