@@ -128,10 +128,6 @@ const Mutation = {
       post.published = data.published;
     }
 
-    if (typeof data.author === "string") {
-      post.author = data.author;
-    }
-
     return post;
   },
   createComment(parent, args, ctx, info) {
