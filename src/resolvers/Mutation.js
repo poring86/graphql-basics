@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { GraphQLYogaError } from "@graphql-yoga/node";
 
 const Mutation = {
   createUser(parent, args, { db }, info) {
@@ -7,7 +8,7 @@ const Mutation = {
     });
 
     if (emailToken) {
-      throw new Error("Email taken");
+      throw new GraphQLYogaError("Email taken");
     }
 
     const user = {
@@ -23,7 +24,7 @@ const Mutation = {
     const userIndex = db.users.findIndex((user) => user.id === args.id);
 
     if (userIndex === -1) {
-      throw new Error("User not found");
+      throw new GraphQLYogaError("User not found");
     }
 
     const deletedUser = db.users.splice(userIndex, 1);
@@ -47,14 +48,14 @@ const Mutation = {
     const user = db.users.find((user) => user.id === id);
 
     if (!user) {
-      throw new Error("User not found");
+      throw new GraphQLYogaError("User not found");
     }
 
     if (typeof data.email === "string") {
       const emailTaken = db.users.some((user) => user.email === data.email);
 
       if (emailTaken) {
-        throw new Error("Email Taken");
+        throw new GraphQLYogaError("Email Taken");
       }
 
       user.email = data.email;
@@ -74,7 +75,7 @@ const Mutation = {
     const userExists = db.users.some((user) => user.id === args.data.author);
 
     if (!userExists) {
-      throw new Error("User not found");
+      throw new GraphQLYogaError("User not found");
     }
     const post = {
       id: uuidv4(),
@@ -88,7 +89,7 @@ const Mutation = {
     const postIndex = db.posts.findIndex((post) => post.id === args.id);
 
     if (postIndex === -1) {
-      throw new Error("Post not found");
+      throw new GraphQLYogaError("Post not found");
     }
 
     const deletedPost = db.posts.splice(postIndex, 1);
@@ -97,11 +98,47 @@ const Mutation = {
 
     dereturnletedPost[0];
   },
+  updatePost(parent, args, { db }, info) {
+    const { id, data } = args;
+    const post = db.posts.find((post) => post.id === id);
+
+    if (!post) {
+      throw new GraphQLYogaError("Post not found");
+    }
+
+    if (typeof data.email === "string") {
+      const emailTaken = db.users.some((user) => user.email === data.email);
+
+      if (emailTaken) {
+        throw new GraphQLYogaError("Email Taken");
+      }
+
+      user.email = data.email;
+    }
+
+    if (typeof data.title === "string") {
+      post.title = data.title;
+    }
+
+    if (typeof data.body === "string") {
+      post.body = data.body;
+    }
+
+    if (typeof data.published === "boolean") {
+      post.published = data.published;
+    }
+
+    if (typeof data.author === "string") {
+      post.author = data.author;
+    }
+
+    return post;
+  },
   createComment(parent, args, ctx, info) {
     const userExists = db.users.some((user) => user.id === args.data.author);
 
     if (!userExists) {
-      throw new Error("User not found");
+      throw new GraphQLYogaError("User not found");
     }
 
     const postExists = db.posts.some(
@@ -109,7 +146,7 @@ const Mutation = {
     );
 
     if (!postExists) {
-      throw new Error("Comment not found");
+      throw new GraphQLYogaError("Comment not found");
     }
 
     const comment = {
@@ -127,7 +164,7 @@ const Mutation = {
     );
 
     if (commentIndex === -1) {
-      throw new Error("Comment not found");
+      throw new GraphQLYogaError("Comment not found");
     }
 
     const deletedComment = db.comments.splice(commentIndex, 1);
