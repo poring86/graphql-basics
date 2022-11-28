@@ -5,6 +5,7 @@ const Post = {
     });
   },
   comments(parent, args, { db }, info) {
+    console.log("parent", parent);
     return db.comments.filter((comment) => {
       return comment.post === parent.id;
     });

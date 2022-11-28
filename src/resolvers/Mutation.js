@@ -106,16 +106,6 @@ const Mutation = {
       throw new GraphQLYogaError("Post not found");
     }
 
-    if (typeof data.email === "string") {
-      const emailTaken = db.users.some((user) => user.email === data.email);
-
-      if (emailTaken) {
-        throw new GraphQLYogaError("Email Taken");
-      }
-
-      user.email = data.email;
-    }
-
     if (typeof data.title === "string") {
       post.title = data.title;
     }
@@ -168,6 +158,20 @@ const Mutation = {
     db.comments = db.comments.filter((comment) => comment.id !== args.id);
 
     return deletedComment[0];
+  },
+  updateComment(parent, args, { db }, info) {
+    const { id, data } = args;
+    const comment = db.comments.find((comment) => comment.id === id);
+
+    if (!comment) {
+      throw new GraphQLYogaError("Comment not found");
+    }
+
+    if (typeof data.text === "string") {
+      comment.text = data.text;
+    }
+
+    return comment;
   },
 };
 

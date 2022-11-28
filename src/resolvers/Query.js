@@ -1,6 +1,5 @@
 const Query = {
   users(parent, args, { db }, info) {
-    console.log("test", db);
     if (!args.query) {
       return db.users;
     }
