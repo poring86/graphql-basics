@@ -2,6 +2,16 @@ import { v4 as uuidv4 } from "uuid";
 import { GraphQLYogaError } from "@graphql-yoga/node";
 
 const Mutation = {
+  test(parent, args, { pubsub }, info) {
+    pubsub.publish("count", {
+      count: 10,
+    });
+    return 10;
+  },
+  broadcastRandomNumber(parent, args, { db, pubsub }, info) {
+    // publish a random number
+    pubsub.publish("randomNumber", Math.random());
+  },
   createUser(parent, args, { db }, info) {
     const emailToken = db.users.some((user) => {
       return user.email === args.data.email;
@@ -120,7 +130,7 @@ const Mutation = {
 
     return post;
   },
-  createComment(parent, args, ctx, info) {
+  createComment(parent, args, { db, pubsub }, info) {
     const userExists = db.users.some((user) => user.id === args.data.author);
 
     if (!userExists) {
@@ -141,6 +151,10 @@ const Mutation = {
     };
 
     db.comments.push(comment);
+    pubsub.publish("count", {
+      count: 99,
+    });
+    // pubsub.publish(`comment ${args.data.post}`, { comment });
 
     return comment;
   },

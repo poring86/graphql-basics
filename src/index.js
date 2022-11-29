@@ -1,4 +1,4 @@
-import { createServer } from "@graphql-yoga/node";
+import { createServer, createPubSub } from "@graphql-yoga/node";
 
 import path from "path";
 import fs from "fs";
@@ -10,6 +10,7 @@ import Mutation from "./resolvers/Mutation";
 import User from "./resolvers/User";
 import Comment from "./resolvers/Comment";
 import Post from "./resolvers/Post";
+import Subscription from "./resolvers/Subscription";
 
 const resolvers = {
   Query,
@@ -17,7 +18,10 @@ const resolvers = {
   Post,
   User,
   Comment,
+  Subscription,
 };
+
+const pubsub = createPubSub();
 
 const server = new createServer({
   schema: {
@@ -26,6 +30,7 @@ const server = new createServer({
   },
   context: {
     db,
+    pubsub,
   },
 });
 
