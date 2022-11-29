@@ -154,7 +154,7 @@ const Mutation = {
     pubsub.publish("count", {
       count: 99,
     });
-    // pubsub.publish(`comment ${args.data.post}`, { comment });
+    pubsub.publish(`comment ${args.data.post}`, { comment });
 
     return comment;
   },

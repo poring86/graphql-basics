@@ -20,20 +20,16 @@ const Subscription = {
   },
   comment: {
     subscribe(parent, { postId }, { db, pubsub }, info) {
-      // const post = db.posts.find((post) => {
-      //   return post.id === postId && post.published;
-      // });
-
-      pubsub.publish("count", {
-        count: 30,
+      const post = db.posts.find((post) => {
+        return post.id === postId && post.published;
       });
 
-      // if (!post) {
-      //   throw new GraphQLYogaError("Post not found");
-      // }
+      if (!post) {
+        throw new GraphQLYogaError("Post not found");
+      }
 
       // return pubsub.subscribe(`comment`);
-      // return pubsub.subscribe(`comment ${postId}`);
+      return pubsub.subscribe(`comment ${postId}`);
     },
   },
 };
