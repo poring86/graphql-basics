@@ -85,23 +85,39 @@ const Mutation = {
     db.posts.push(post);
 
     if (args.data.published) {
-      pubsub.publish("post", { post });
+      pubsub.publish("post", {
+        post: {
+          mutation: "CREATED",
+          data: post,
+        },
+      });
     }
 
     return post;
   },
-  deletePost(parent, args, { db }, info) {
+  deletePost(parent, args, { db, pubsub }, info) {
     const postIndex = db.posts.findIndex((post) => post.id === args.id);
 
     if (postIndex === -1) {
       throw new GraphQLYogaError("Post not found");
     }
 
-    const deletedPost = db.posts.splice(postIndex, 1);
+    const [post] = db.posts.splice(postIndex, 1);
 
-    comments = db.comments.filter((comment) => comment.post !== args.id);
+    console.log("post", post);
 
-    dereturnletedPost[0];
+    db.comments = db.comments.filter((comment) => comment.post !== args.id);
+
+    if (post.published) {
+      pubsub.publish("post", {
+        post: {
+          mutation: "DELETED",
+          data: post,
+        },
+      });
+    }
+
+    return post;
   },
   updatePost(parent, args, { db }, info) {
     const { id, data } = args;
