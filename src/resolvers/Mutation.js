@@ -117,9 +117,10 @@ const Mutation = {
 
     return post;
   },
-  updatePost(parent, args, { db }, info) {
+  updatePost(parent, args, { db, pubsub }, info) {
     const { id, data } = args;
     const post = db.posts.find((post) => post.id === id);
+    const originalPost = { ...post };
 
     if (!post) {
       throw new GraphQLYogaError("Post not found");
@@ -135,6 +136,40 @@ const Mutation = {
 
     if (typeof data.published === "boolean") {
       post.published = data.published;
+
+      if (originalPost.published && !post.published) {
+        // deleted
+        pubsub.publish("post", {
+          post: {
+            mutation: "DELETED",
+            data: originalPost,
+          },
+        });
+      } else if (!originalPost.published && post.published) {
+        // created
+        pubsub.publish("post", {
+          post: {
+            mutation: "CREATED",
+            data: post,
+          },
+        });
+      } else if (originalPost.published && post.published) {
+        // updated
+        pubsub.publish("post", {
+          post: {
+            mutation: "UPDATED",
+            data: post,
+          },
+        });
+      }
+    } else if (post.published) {
+      // updated
+      pubsub.publish("post", {
+        post: {
+          mutation: "UPDATED",
+          data: post,
+        },
+      });
     }
 
     return post;
