@@ -84,7 +84,9 @@ const Mutation = {
 
     db.posts.push(post);
 
-    pubsub.publish("post", { post });
+    if (args.data.published) {
+      pubsub.publish("post", { post });
+    }
 
     return post;
   },
