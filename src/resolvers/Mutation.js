@@ -104,8 +104,6 @@ const Mutation = {
 
     const [post] = db.posts.splice(postIndex, 1);
 
-    console.log("post", post);
-
     db.comments = db.comments.filter((comment) => comment.post !== args.id);
 
     if (post.published) {
