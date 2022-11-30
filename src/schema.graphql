@@ -19,8 +19,6 @@ type Mutation {
   createComment(data: CreateCommentInput): Comment!
   deleteComment(id: ID!): Comment!
   updateComment(id: ID!, data: UpdateCommentInput): Comment!
-  broadcastRandomNumber: Boolean
-  test: Int
 }
 
 type Subscription {

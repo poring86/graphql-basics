@@ -32,6 +32,11 @@ const Subscription = {
       return pubsub.subscribe(`comment ${postId}`);
     },
   },
+  post: {
+    subscribe(_, __, { db, pubsub }) {
+      return pubsub.subscribe("post");
+    },
+  },
 };
 
 export { Subscription as default };
