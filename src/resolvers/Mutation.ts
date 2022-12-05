@@ -172,7 +172,7 @@ const Mutation = {
         where: {
           id: id,
         },
-        post,
+        data: post,
       });
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
@@ -276,31 +276,36 @@ const Mutation = {
       }
     }
   },
-  updateComment(
+  async updateComment(
     _parent: any,
     args: { id: string; data: Comment },
-    { db, pubsub }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
-    const { id, data } = args;
-    const comment = db.comments.find((comment: Comment) => comment.id === id);
+    try {
+      const comment = await prisma.comment.update({
+        where: {
+          id: args.id,
+        },
+        data: args.data,
+      });
 
-    if (!comment) {
-      throw new GraphQLYogaError("Comment not found");
+      pubsub.publish(`comment ${comment.post}`, {
+        comment: {
+          mutation: "UPDATED",
+          data: comment,
+        },
+      });
+
+      return comment;
+    } catch (e) {
+      console.log("error", e);
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("Comment not found");
+        }
+      }
     }
-
-    if (typeof data.text === "string") {
-      comment.text = data.text;
-    }
-
-    pubsub.publish(`comment ${comment.post}`, {
-      comment: {
-        mutation: "UPDATED",
-        data: comment,
-      },
-    });
-
-    return comment;
   },
 };
 
