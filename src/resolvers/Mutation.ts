@@ -1,60 +1,76 @@
 import { v4 as uuidv4 } from "uuid";
 import { GraphQLYogaError } from "@graphql-yoga/node";
 
+import { User, Comment, Post } from "../types/global";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+
 const Mutation = {
-  createUser(parent, args, { db }, info) {
-    const emailToken = db.users.some((user) => {
-      return user.email === args.data.email;
-    });
-
-    if (emailToken) {
-      throw new GraphQLYogaError("Email taken");
-    }
-
-    const user = {
-      id: uuidv4(),
-      ...args.data,
-    };
-
-    db.users.push(user);
-
-    return user;
-  },
-  deleteUser(parent, args, { db }, info) {
-    const userIndex = db.users.findIndex((user) => user.id === args.id);
-
-    if (userIndex === -1) {
-      throw new GraphQLYogaError("User not found");
-    }
-
-    const deletedUser = db.users.splice(userIndex, 1);
-
-    db.posts = db.posts.filter((post) => {
-      const match = post.author === args.id;
-
-      if (match) {
-        db.comments = db.comments.filter((comment) => comment.post !== post.id);
+  async createUser(
+    _parent: any,
+    args: { data: User },
+    { prisma }: any,
+    _info: any
+  ) {
+    try {
+      await prisma.user.create({
+        data: {
+          ...args.data,
+        },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2002") {
+          throw new GraphQLYogaError("Email Taken");
+        }
       }
+    }
+  },
+  async deleteUser(
+    _parent: any,
+    args: { id: string },
+    { prisma }: any,
+    _info: any
+  ) {
+    try {
+      return await prisma.user.delete({
+        where: {
+          id: args.id,
+        },
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("User not found");
+        }
+      }
+    }
+  },
+  async updateUser(
+    _parent: any,
+    args: { id: string; data: User },
+    { db, prisma }: any,
+    _info: any
+  ) {
+    const { id, data } = args;
 
-      return !match;
+    const user = await prisma.user.count({
+      where: {
+        id: id,
+      },
     });
 
-    db.comments = db.comments.filter((comment) => comment.author !== args.id);
-
-    return deletedUser[0];
-  },
-  updateUser(parent, args, { db }, info) {
-    const { id, data } = args;
-    const user = db.users.find((user) => user.id === id);
-
-    if (!user) {
+    if (user === 0) {
       throw new GraphQLYogaError("User not found");
     }
 
     if (typeof data.email === "string") {
-      const emailTaken = db.users.some((user) => user.email === data.email);
+      const emailTaken = await prisma.user.count({
+        where: {
+          email: args.data.email,
+        },
+      });
 
-      if (emailTaken) {
+      if (emailTaken > 0) {
         throw new GraphQLYogaError("Email Taken");
       }
 
@@ -69,10 +85,22 @@ const Mutation = {
       user.age = data.age;
     }
 
-    return user;
+    return await prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: user,
+    });
   },
-  createPost(parent, args, { db, pubsub }, info) {
-    const userExists = db.users.some((user) => user.id === args.data.author);
+  createPost(
+    _parent: any,
+    args: { data: { author: any; published: any } },
+    { db, pubsub }: any,
+    _info: any
+  ) {
+    const userExists = db.users.some(
+      (user: User) => user.id === args.data.author
+    );
 
     if (!userExists) {
       throw new GraphQLYogaError("User not found");
@@ -95,8 +123,13 @@ const Mutation = {
 
     return post;
   },
-  deletePost(parent, args, { db, pubsub }, info) {
-    const postIndex = db.posts.findIndex((post) => post.id === args.id);
+  deletePost(
+    _parent: any,
+    args: { id: string },
+    { db, pubsub }: any,
+    _info: any
+  ) {
+    const postIndex = db.posts.findIndex((post: Post) => post.id === args.id);
 
     if (postIndex === -1) {
       throw new GraphQLYogaError("Post not found");
@@ -104,7 +137,9 @@ const Mutation = {
 
     const [post] = db.posts.splice(postIndex, 1);
 
-    db.comments = db.comments.filter((comment) => comment.post !== args.id);
+    db.comments = db.comments.filter(
+      (comment: Comment) => comment.post !== args.id
+    );
 
     if (post.published) {
       pubsub.publish("post", {
@@ -117,9 +152,14 @@ const Mutation = {
 
     return post;
   },
-  updatePost(parent, args, { db, pubsub }, info) {
+  updatePost(
+    _parent: any,
+    args: { id: string; data: Post },
+    { db, pubsub }: any,
+    _info: any
+  ) {
     const { id, data } = args;
-    const post = db.posts.find((post) => post.id === id);
+    const post = db.posts.find((post: Post) => post.id === id);
     const originalPost = { ...post };
 
     if (!post) {
@@ -174,15 +214,22 @@ const Mutation = {
 
     return post;
   },
-  createComment(parent, args, { db, pubsub }, info) {
-    const userExists = db.users.some((user) => user.id === args.data.author);
+  createComment(
+    _parent: any,
+    args: { data: any },
+    { db, pubsub }: any,
+    _info: any
+  ) {
+    const userExists = db.users.some(
+      (user: User) => user.id === args.data.author
+    );
 
     if (!userExists) {
       throw new GraphQLYogaError("User not found");
     }
 
     const postExists = db.posts.some(
-      (post) => post.id === args.data.post && post.published
+      (post: Post) => post.id === args.data.post && post.published
     );
 
     if (!postExists) {
@@ -205,9 +252,14 @@ const Mutation = {
 
     return comment;
   },
-  deleteComment(parent, args, { db, pubsub }, info) {
+  deleteComment(
+    _parent: any,
+    args: { id: string },
+    { db, pubsub }: any,
+    _info: any
+  ) {
     const commentIndex = db.comments.findIndex(
-      (comment) => comment.id === args.id
+      (comment: Comment) => comment.id === args.id
     );
 
     if (commentIndex === -1) {
@@ -216,7 +268,9 @@ const Mutation = {
 
     const [comment] = db.comments.splice(commentIndex, 1);
 
-    db.comments = db.comments.filter((comment) => comment.id !== args.id);
+    db.comments = db.comments.filter(
+      (comment: Comment) => comment.id !== args.id
+    );
 
     pubsub.publish(`comment ${comment.post}`, {
       comment: {
@@ -227,9 +281,14 @@ const Mutation = {
 
     return comment;
   },
-  updateComment(parent, args, { db, pubsub }, info) {
+  updateComment(
+    _parent: any,
+    args: { id: string; data: Comment },
+    { db, pubsub }: any,
+    _info: any
+  ) {
     const { id, data } = args;
-    const comment = db.comments.find((comment) => comment.id === id);
+    const comment = db.comments.find((comment: Comment) => comment.id === id);
 
     if (!comment) {
       throw new GraphQLYogaError("Comment not found");
