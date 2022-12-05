@@ -80,7 +80,7 @@ const Mutation = {
     _info: any
   ) {
     try {
-      return await prisma.post.create({
+      const post = await prisma.post.create({
         data: {
           title: args.data.title,
           body: args.data.body,
@@ -91,6 +91,17 @@ const Mutation = {
           author: true,
         },
       });
+
+      if (args.data.published) {
+        pubsub.publish("post", {
+          post: {
+            mutation: "CREATED",
+            data: post,
+          },
+        });
+      }
+
+      return post;
     } catch (e) {
       console.log("error", e);
       if (e instanceof PrismaClientKnownRequestError) {
