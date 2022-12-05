@@ -136,14 +136,20 @@ const Mutation = {
       }
     }
   },
-  updatePost(
+  async updatePost(
     _parent: any,
     args: { id: string; data: Post },
-    { db, pubsub }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
     const { id, data } = args;
-    const post = db.posts.find((post: Post) => post.id === id);
+
+    let post = await prisma.post.findUnique({
+      where: {
+        id: args.id,
+      },
+    });
+
     const originalPost = { ...post };
 
     if (!post) {
@@ -160,34 +166,45 @@ const Mutation = {
 
     if (typeof data.published === "boolean") {
       post.published = data.published;
+    }
 
-      if (originalPost.published && !post.published) {
-        // deleted
-        pubsub.publish("post", {
-          post: {
-            mutation: "DELETED",
-            data: originalPost,
-          },
-        });
-      } else if (!originalPost.published && post.published) {
-        // created
-        pubsub.publish("post", {
-          post: {
-            mutation: "CREATED",
-            data: post,
-          },
-        });
-      } else if (originalPost.published && post.published) {
-        // updated
-        pubsub.publish("post", {
-          post: {
-            mutation: "UPDATED",
-            data: post,
-          },
-        });
+    try {
+      post = await prisma.post.update({
+        where: {
+          id: id,
+        },
+        post,
+      });
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("Post not found");
+        }
       }
-    } else if (post.published) {
-      // updated
+    }
+
+    if (typeof data.published !== "boolean" && post.published) {
+      pubsub.publish("post", {
+        post: {
+          mutation: "UPDATED",
+          data: post,
+        },
+      });
+    } else if (originalPost.published && !post.published) {
+      pubsub.publish("post", {
+        post: {
+          mutation: "DELETED",
+          data: originalPost,
+        },
+      });
+    } else if (!originalPost.published && post.published) {
+      pubsub.publish("post", {
+        post: {
+          mutation: "CREATED",
+          data: post,
+        },
+      });
+    } else if (originalPost.published && post.published) {
       pubsub.publish("post", {
         post: {
           mutation: "UPDATED",
