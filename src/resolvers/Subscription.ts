@@ -1,12 +1,13 @@
+import { GraphQLYogaError } from "@graphql-yoga/node";
+
+import { Post } from "../types/global";
+
 const Subscription = {
   count: {
-    subscribe(parent, args, { pubsub }, info) {
+    subscribe(_parent: any, _args: any, { pubsub }: any, _info: any) {
       let count = 0;
 
-      console.log("count", count);
-
       setInterval(() => {
-        console.log("pubsub", pubsub.subscribe);
         count++;
         if (count < 4) {
           pubsub.publish("count", {
@@ -19,8 +20,8 @@ const Subscription = {
     },
   },
   comment: {
-    subscribe(parent, { postId }, { db, pubsub }, info) {
-      const post = db.posts.find((post) => {
+    subscribe(_parent: any, { postId }: any, { db, pubsub }: any, _info: any) {
+      const post = db.posts.find((post: Post) => {
         return post.id === postId && post.published;
       });
 
@@ -33,7 +34,7 @@ const Subscription = {
     },
   },
   post: {
-    subscribe(_, __, { db, pubsub }) {
+    subscribe(_: any, __: any, { pubsub }: any) {
       return pubsub.subscribe("post");
     },
   },

@@ -12,6 +12,9 @@ import Comment from "./resolvers/Comment";
 import Post from "./resolvers/Post";
 import Subscription from "./resolvers/Subscription";
 
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
 const resolvers = {
   Query,
   Mutation,
@@ -23,7 +26,7 @@ const resolvers = {
 
 const pubsub = createPubSub();
 
-const server = new createServer({
+const server = createServer({
   schema: {
     typeDefs: fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf-8"),
     resolvers,
@@ -31,9 +34,8 @@ const server = new createServer({
   context: {
     db,
     pubsub,
+    prisma,
   },
 });
 
-server.start(() => {
-  console.log("The server is up");
-});
+server.start();
