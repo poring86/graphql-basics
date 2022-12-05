@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
 import { GraphQLYogaError } from "@graphql-yoga/node";
 
 import { User, Comment, Post } from "../types/global";
@@ -248,34 +247,34 @@ const Mutation = {
       }
     }
   },
-  deleteComment(
+  async deleteComment(
     _parent: any,
     args: { id: string },
-    { db, pubsub }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
-    const commentIndex = db.comments.findIndex(
-      (comment: Comment) => comment.id === args.id
-    );
+    try {
+      const comment = await prisma.comment.delete({
+        where: {
+          id: args.id,
+        },
+      });
+      pubsub.publish(`comment ${comment.post}`, {
+        comment: {
+          mutation: "DELETED",
+          data: comment,
+        },
+      });
 
-    if (commentIndex === -1) {
-      throw new GraphQLYogaError("Comment not found");
+      return comment;
+    } catch (e) {
+      console.log("erro", e);
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("Comment not found");
+        }
+      }
     }
-
-    const [comment] = db.comments.splice(commentIndex, 1);
-
-    db.comments = db.comments.filter(
-      (comment: Comment) => comment.id !== args.id
-    );
-
-    pubsub.publish(`comment ${comment.post}`, {
-      comment: {
-        mutation: "DELETED",
-        data: comment,
-      },
-    });
-
-    return comment;
   },
   updateComment(
     _parent: any,
