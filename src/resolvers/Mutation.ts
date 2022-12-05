@@ -215,43 +215,38 @@ const Mutation = {
 
     return post;
   },
-  createComment(
+  async createComment(
     _parent: any,
     args: { data: any },
-    { db, pubsub }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
-    const userExists = db.users.some(
-      (user: User) => user.id === args.data.author
-    );
+    try {
+      const comment = await prisma.comment.create({
+        data: {
+          text: args.data.text,
+          userId: args.data.author,
+          postId: args.data.post,
+        },
+      });
 
-    if (!userExists) {
-      throw new GraphQLYogaError("User not found");
+      pubsub.publish(`comment ${args.data.post}`, {
+        comment: {
+          mutation: "CREATED",
+          data: comment,
+        },
+      });
+
+      return comment;
+    } catch (e) {
+      console.log("erro", e);
+
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2003") {
+          throw new GraphQLYogaError("Not found");
+        }
+      }
     }
-
-    const postExists = db.posts.some(
-      (post: Post) => post.id === args.data.post && post.published
-    );
-
-    if (!postExists) {
-      throw new GraphQLYogaError("Comment not found");
-    }
-
-    const comment = {
-      id: uuidv4(),
-      ...args.data,
-    };
-
-    db.comments.push(comment);
-
-    pubsub.publish(`comment ${args.data.post}`, {
-      comment: {
-        mutation: "CREATED",
-        data: comment,
-      },
-    });
-
-    return comment;
   },
   deleteComment(
     _parent: any,
