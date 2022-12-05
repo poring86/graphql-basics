@@ -2,10 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import { GraphQLYogaError } from "@graphql-yoga/node";
 
 import { User, Comment, Post } from "../types/global";
-import {
-  PrismaClientKnownRequestError,
-  PrismaClientUnknownRequestError,
-} from "@prisma/client/runtime";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 const Mutation = {
   async createUser(
@@ -76,7 +73,7 @@ const Mutation = {
   async createPost(
     _parent: any,
     args: { data: Post },
-    { db, pubsub, prisma }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
     try {
@@ -86,9 +83,6 @@ const Mutation = {
           body: args.data.body,
           published: args.data.published,
           userId: args.data.author,
-        },
-        include: {
-          author: true,
         },
       });
 
@@ -111,34 +105,36 @@ const Mutation = {
       }
     }
   },
-  deletePost(
+  async deletePost(
     _parent: any,
     args: { id: string },
-    { db, pubsub }: any,
+    { pubsub, prisma }: any,
     _info: any
   ) {
-    const postIndex = db.posts.findIndex((post: Post) => post.id === args.id);
-
-    if (postIndex === -1) {
-      throw new GraphQLYogaError("Post not found");
-    }
-
-    const [post] = db.posts.splice(postIndex, 1);
-
-    db.comments = db.comments.filter(
-      (comment: Comment) => comment.post !== args.id
-    );
-
-    if (post.published) {
-      pubsub.publish("post", {
-        post: {
-          mutation: "DELETED",
-          data: post,
+    try {
+      const post = await prisma.post.delete({
+        where: {
+          id: args.id,
         },
       });
-    }
 
-    return post;
+      if (post.published) {
+        pubsub.publish("post", {
+          post: {
+            mutation: "DELETED",
+            data: post,
+          },
+        });
+      }
+
+      return post;
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("Post not found");
+        }
+      }
+    }
   },
   updatePost(
     _parent: any,

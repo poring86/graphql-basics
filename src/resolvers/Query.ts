@@ -25,10 +25,6 @@ const Query = {
           mode: "insensitive",
         },
       },
-      include: {
-        posts: true,
-        comments: true,
-      },
     });
   },
   async posts(
@@ -38,11 +34,7 @@ const Query = {
     _info: any
   ) {
     if (!args.query) {
-      return await prisma.post.findMany({
-        include: {
-          author: true,
-        },
-      });
+      return await prisma.post.findMany();
     }
 
     return await prisma.post.findMany({
@@ -56,18 +48,10 @@ const Query = {
           mode: "insensitive",
         },
       },
-      include: {
-        author: true,
-      },
     });
   },
   async comments(_parent: any, _args: any, { prisma }: any, _info: any) {
-    return await prisma.comment.findMany({
-      include: {
-        author: true,
-        post: true,
-      },
-    });
+    return await prisma.comment.findMany();
   },
   add(_parent: any, args: { numbers: any[] }, _ctx: any, _info: any) {
     if (args.numbers.length === 0) {
