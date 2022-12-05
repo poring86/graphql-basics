@@ -2,7 +2,10 @@ import { v4 as uuidv4 } from "uuid";
 import { GraphQLYogaError } from "@graphql-yoga/node";
 
 import { User, Comment, Post } from "../types/global";
-import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientUnknownRequestError,
+} from "@prisma/client/runtime";
 
 const Mutation = {
   async createUser(
@@ -70,36 +73,32 @@ const Mutation = {
       }
     }
   },
-  createPost(
+  async createPost(
     _parent: any,
-    args: { data: { author: any; published: any } },
-    { db, pubsub }: any,
+    args: { data: Post },
+    { db, pubsub, prisma }: any,
     _info: any
   ) {
-    const userExists = db.users.some(
-      (user: User) => user.id === args.data.author
-    );
-
-    if (!userExists) {
-      throw new GraphQLYogaError("User not found");
-    }
-    const post = {
-      id: uuidv4(),
-      ...args.data,
-    };
-
-    db.posts.push(post);
-
-    if (args.data.published) {
-      pubsub.publish("post", {
-        post: {
-          mutation: "CREATED",
-          data: post,
+    try {
+      return await prisma.post.create({
+        data: {
+          title: args.data.title,
+          body: args.data.body,
+          published: args.data.published,
+          userId: args.data.author,
+        },
+        include: {
+          author: true,
         },
       });
+    } catch (e) {
+      console.log("error", e);
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2003") {
+          throw new GraphQLYogaError("User not found");
+        }
+      }
     }
-
-    return post;
   },
   deletePost(
     _parent: any,
