@@ -48,49 +48,27 @@ const Mutation = {
   async updateUser(
     _parent: any,
     args: { id: string; data: User },
-    { db, prisma }: any,
+    { prisma }: any,
     _info: any
   ) {
     const { id, data } = args;
-
-    const user = await prisma.user.count({
-      where: {
-        id: id,
-      },
-    });
-
-    if (user === 0) {
-      throw new GraphQLYogaError("User not found");
-    }
-
-    if (typeof data.email === "string") {
-      const emailTaken = await prisma.user.count({
+    try {
+      return await prisma.user.update({
         where: {
-          email: args.data.email,
+          id: id,
         },
+        data,
       });
-
-      if (emailTaken > 0) {
-        throw new GraphQLYogaError("Email Taken");
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === "P2025") {
+          throw new GraphQLYogaError("User not found");
+        }
+        if (e.code === "P2002") {
+          throw new GraphQLYogaError("Email Taken");
+        }
       }
-
-      user.email = data.email;
     }
-
-    if (typeof data.name === "string") {
-      user.name = data.name;
-    }
-
-    if (typeof data.age !== "undefined") {
-      user.age = data.age;
-    }
-
-    return await prisma.user.update({
-      where: {
-        id: id,
-      },
-      data: user,
-    });
   },
   createPost(
     _parent: any,
