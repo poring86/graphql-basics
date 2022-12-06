@@ -96,7 +96,6 @@ const Mutation = {
 
       return post;
     } catch (e) {
-      console.log("error", e);
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === "P2003") {
           throw new GraphQLYogaError("User not found");
@@ -238,8 +237,6 @@ const Mutation = {
 
       return comment;
     } catch (e) {
-      console.log("erro", e);
-
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === "P2003") {
           throw new GraphQLYogaError("Not found");
@@ -268,7 +265,6 @@ const Mutation = {
 
       return comment;
     } catch (e) {
-      console.log("erro", e);
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === "P2025") {
           throw new GraphQLYogaError("Comment not found");
@@ -299,7 +295,6 @@ const Mutation = {
 
       return comment;
     } catch (e) {
-      console.log("error", e);
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === "P2025") {
           throw new GraphQLYogaError("Comment not found");
