@@ -1,6 +1,8 @@
 import { createServer, createPubSub } from "@graphql-yoga/node";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { applyMiddleware } from "graphql-middleware";
 
-import path from "path";
+import path, { resolve } from "path";
 import fs from "fs";
 
 import db from "./db";
@@ -13,29 +15,49 @@ import Post from "./resolvers/Post";
 import Subscription from "./resolvers/Subscription";
 
 import { PrismaClient } from "@prisma/client";
+import permissions from "./permissions";
 const prisma = new PrismaClient();
-
-const resolvers = {
-  Query,
-  Mutation,
-  Post,
-  User,
-  Comment,
-  Subscription,
-};
-
 const pubsub = createPubSub();
 
-const server = createServer({
-  schema: {
-    typeDefs: fs.readFileSync(path.join(__dirname, "schema.graphql"), "utf-8"),
+const resolvers = {
+    Query,
+    Mutation,
+    Post,
+    User,
+    Comment,
+    Subscription,
+};
+
+const typeDefs = fs.readFileSync(
+    path.join(__dirname, "schema.graphql"),
+    "utf-8"
+);
+
+const schema = makeExecutableSchema({
+    typeDefs,
     resolvers,
-  },
-  context: {
-    db,
-    pubsub,
-    prisma,
-  },
+});
+
+const logInput = async (
+    resolve: any,
+    parent: any,
+    args: any,
+    context: any,
+    info: any
+) => {
+    const result = await resolve(parent, args, context, info);
+    return result;
+};
+
+const schemaWithMiddleware = applyMiddleware(schema, permissions);
+
+const server = createServer({
+    schema: schemaWithMiddleware,
+    context: {
+        db,
+        pubsub,
+        prisma,
+    },
 });
 
 server.start();

@@ -15,6 +15,7 @@ model User {
   name     String
   email    String    @unique
   age      Int
+  password String?
   posts    Post[]
   comments Comment[]
 }
