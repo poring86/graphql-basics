@@ -222,20 +222,21 @@ const Mutation = {
     },
     async createComment(
         _parent: any,
-        args: { data: any },
-        { pubsub, prisma }: any,
+        { data }: { data: any },
+        { pubsub, prisma, request }: any,
         _info: any
     ) {
+        const userId = getUserId(request);
         try {
             const comment = await prisma.comment.create({
                 data: {
-                    text: args.data.text,
-                    userId: args.data.author,
-                    postId: args.data.post,
+                    text: data.text,
+                    userId,
+                    postId: data.post,
                 },
             });
 
-            pubsub.publish(`comment ${args.data.post}`, {
+            pubsub.publish(`comment ${data.post}`, {
                 comment: {
                     mutation: "CREATED",
                     data: comment,
@@ -253,14 +254,14 @@ const Mutation = {
     },
     async deleteComment(
         _parent: any,
-        args: { id: string },
+        { id }: { id: string },
         { pubsub, prisma }: any,
         _info: any
     ) {
         try {
             const comment = await prisma.comment.delete({
                 where: {
-                    id: args.id,
+                    id,
                 },
             });
             pubsub.publish(`comment ${comment.post}`, {
