@@ -82,16 +82,15 @@ const Mutation = {
     async createPost(
         _parent: any,
         { data }: { data: Post },
-        { pubsub, prisma }: any,
+        { pubsub, prisma, request }: any,
         _info: any
     ) {
+        const userId = getUserId(request);
         try {
             const post = await prisma.post.create({
                 data: {
-                    title: data.title,
-                    body: data.body,
-                    published: data.published,
-                    userId: data.author,
+                    ...data,
+                    userId,
                 },
             });
 
@@ -115,14 +114,14 @@ const Mutation = {
     },
     async deletePost(
         _parent: any,
-        args: { id: string },
+        { id }: { id: string },
         { pubsub, prisma }: any,
         _info: any
     ) {
         try {
             const post = await prisma.post.delete({
                 where: {
-                    id: args.id,
+                    id,
                 },
             });
 
@@ -146,15 +145,13 @@ const Mutation = {
     },
     async updatePost(
         _parent: any,
-        args: { id: string; data: Post },
+        { id, data }: { id: string; data: Post },
         { pubsub, prisma }: any,
         _info: any
     ) {
-        const { id, data } = args;
-
         let post = await prisma.post.findUnique({
             where: {
-                id: args.id,
+                id,
             },
         });
 
@@ -179,9 +176,9 @@ const Mutation = {
         try {
             post = await prisma.post.update({
                 where: {
-                    id: id,
+                    id,
                 },
-                data: post,
+                data,
             });
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
