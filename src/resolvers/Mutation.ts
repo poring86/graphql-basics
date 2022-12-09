@@ -1,24 +1,23 @@
 import { GraphQLYogaError } from "@graphql-yoga/node";
+import { compare, hash } from "bcryptjs";
+
+import { sign } from "jsonwebtoken";
 
 import { User, Comment, Post } from "../types/global";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
-import { compare, hash } from "bcryptjs";
-
-import { sign, verify } from "jsonwebtoken";
-
-const APP_SECRET = "appsecret321";
+import { APP_SECRET, getUserId } from "../utils";
 
 const Mutation = {
     async createUser(
         _parent: any,
-        args: { data: User },
+        { data }: { data: User },
         { prisma }: any,
         _info: any
     ) {
-        const hashedPassword = await hash(args.data.password, 10);
+        const hashedPassword = await hash(data.password, 10);
         const user = {
-            ...args.data,
+            ...data,
             password: hashedPassword,
         };
 
@@ -56,15 +55,15 @@ const Mutation = {
     },
     async updateUser(
         _parent: any,
-        args: { id: string; data: User },
-        { prisma }: any,
+        { data }: { data: User },
+        { prisma, request }: any,
         _info: any
     ) {
-        const { id, data } = args;
+        const userId = getUserId(request);
         try {
             return await prisma.user.update({
                 where: {
-                    id: id,
+                    id: userId,
                 },
                 data,
             });
@@ -81,21 +80,21 @@ const Mutation = {
     },
     async createPost(
         _parent: any,
-        args: { data: Post },
+        { data }: { data: Post },
         { pubsub, prisma }: any,
         _info: any
     ) {
         try {
             const post = await prisma.post.create({
                 data: {
-                    title: args.data.title,
-                    body: args.data.body,
-                    published: args.data.published,
-                    userId: args.data.author,
+                    title: data.title,
+                    body: data.body,
+                    published: data.published,
+                    userId: data.author,
                 },
             });
 
-            if (args.data.published) {
+            if (data.published) {
                 pubsub.publish("post", {
                     post: {
                         mutation: "CREATED",

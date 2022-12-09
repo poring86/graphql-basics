@@ -2,8 +2,8 @@ import { verify } from "jsonwebtoken";
 
 const APP_SECRET = require("dotenv").config().parsed.APP_SECRET;
 
-function getUserId(context: any) {
-    const authHeader = context.request.headers.get("authorization");
+function getUserId(request: any) {
+    const authHeader = request.headers.get("authorization");
 
     if (authHeader) {
         const token = authHeader.replace("Bearer ", "");

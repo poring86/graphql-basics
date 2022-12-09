@@ -2,13 +2,13 @@ import { rule, shield } from "graphql-shield";
 import { getUserId } from "../utils";
 
 const rules = {
-    isAuthenticatedUser: rule()((_parent, _args, context) => {
-        const userId = getUserId(context);
+    isAuthenticatedUser: rule()((_parent, _args, { request }) => {
+        const userId = getUserId(request);
         return Boolean(userId);
     }),
-    isPostOwner: rule()(async (_parent, args, context) => {
-        const userId = getUserId(context);
-        const author = await context.prisma.post
+    isPostOwner: rule()(async (_parent, args, { request, prisma }) => {
+        const userId = getUserId(request);
+        const author = await prisma.post
             .findUnique({
                 where: {
                     id: args.id,
@@ -17,9 +17,9 @@ const rules = {
             .author();
         return userId === author.id;
     }),
-    isCommentOwner: rule()(async (_parent, args, context) => {
-        const userId = getUserId(context);
-        const author: any = await context.prisma.comment
+    isCommentOwner: rule()(async (_parent, args, { request, prisma }) => {
+        const userId = getUserId(request);
+        const author = await prisma.comment
             .findUnique({
                 where: {
                     id: args.id,

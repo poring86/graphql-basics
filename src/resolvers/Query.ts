@@ -29,10 +29,10 @@ const Query = {
             },
         });
     },
-    async me(_parent: any, _args: any, context: any, _info: any) {
-        const userId = getUserId(context);
+    async me(_parent: any, _args: any, { request, prisma }: any, _info: any) {
+        const userId = getUserId(request);
         try {
-            return await context.prisma.user.findUnique({
+            return await prisma.user.findUnique({
                 where: {
                     id: userId,
                 },
