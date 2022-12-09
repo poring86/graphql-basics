@@ -1,4 +1,5 @@
-import { verify } from "jsonwebtoken";
+import { hash } from "bcryptjs";
+import { sign, verify } from "jsonwebtoken";
 
 const APP_SECRET = require("dotenv").config().parsed.APP_SECRET;
 
@@ -13,4 +14,10 @@ function getUserId(request: any) {
     }
 }
 
-export { APP_SECRET, getUserId };
+const hashedPassword = async (password: string) => await hash(password, 10);
+
+const generateToken = (userId: string) => {
+    sign({ userId }, APP_SECRET, { expiresIn: "7 days" });
+};
+
+export { APP_SECRET, getUserId, hashedPassword, generateToken };

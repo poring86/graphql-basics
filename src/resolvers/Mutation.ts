@@ -6,7 +6,7 @@ import { sign } from "jsonwebtoken";
 import { User, Comment, Post } from "../types/global";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
-import { APP_SECRET, getUserId } from "../utils";
+import { generateToken, getUserId, hashedPassword } from "../utils";
 
 const Mutation = {
     async createUser(
@@ -15,16 +15,20 @@ const Mutation = {
         { prisma }: any,
         _info: any
     ) {
-        const hashedPassword = await hash(data.password, 10);
-        const user = {
-            ...data,
-            password: hashedPassword,
-        };
+        const password = hashedPassword(data.password);
 
         try {
-            return await prisma.user.create({
-                data: user,
+            const user = await prisma.user.create({
+                data: {
+                    ...data,
+                    password,
+                },
             });
+
+            return {
+                user,
+                token: generateToken(user.id),
+            };
         } catch (e) {
             if (e instanceof PrismaClientKnownRequestError) {
                 if (e.code === "P2002") {
@@ -327,7 +331,7 @@ const Mutation = {
             throw new GraphQLYogaError("Invalid password");
         }
 
-        const token = sign({ userId: user.id }, APP_SECRET);
+        const token = generateToken(user.id);
 
         return {
             token,
