@@ -35,14 +35,15 @@ const Mutation = {
     },
     async deleteUser(
         _parent: any,
-        args: { id: string },
-        { prisma }: any,
+        _args: any,
+        { prisma, request }: any,
         _info: any
     ) {
+        const userId = getUserId(request);
         try {
             return await prisma.user.delete({
                 where: {
-                    id: args.id,
+                    id: userId,
                 },
             });
         } catch (e) {
