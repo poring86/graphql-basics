@@ -2,8 +2,6 @@ import { GraphQLYogaError } from "@graphql-yoga/node";
 import { compare } from "bcryptjs";
 
 import {
-    User,
-    Post,
     CreateCommentInput,
     UpdateCommentInput,
     CreateUserInput,

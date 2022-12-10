@@ -2,10 +2,8 @@ import { createServer, createPubSub } from "@graphql-yoga/node";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { applyMiddleware } from "graphql-middleware";
 
-import path, { resolve } from "path";
+import path from "path";
 import fs from "fs";
-
-import db from "./db";
 
 import Query from "./resolvers/Query";
 import Mutation from "./resolvers/Mutation";
@@ -54,7 +52,6 @@ const schemaWithMiddleware = applyMiddleware(schema, permissions);
 const server = createServer({
     schema: schemaWithMiddleware,
     context: {
-        db,
         pubsub,
         prisma,
     },

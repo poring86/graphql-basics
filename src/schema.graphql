@@ -1,10 +1,9 @@
 type Query {
     me: User!
-    users(query: String): [User!]!
-    posts(query: String): [Post!]!
+    users(query: String, skip: Int, take: Int): [User!]!
+    posts(query: String, skip: Int, take: Int): [Post!]!
     add(numbers: [Float!]!): Float!
-    grades: [Int!]!
-    comments: [Comment!]!
+    comments(skip: Int, take: Int): [Comment!]!
 }
 
 type Mutation {

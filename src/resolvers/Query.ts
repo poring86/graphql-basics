@@ -3,12 +3,14 @@ import { getUserId } from "../utils";
 const Query = {
     async users(
         _parent: any,
-        { query }: { query: string },
+        { query, skip, take }: { query: string; skip: number; take: number },
         { prisma }: any,
         _info: any
     ) {
         if (!query) {
             return await prisma.user.findMany({
+                skip,
+                take,
                 include: {
                     posts: true,
                     comments: true,
@@ -17,6 +19,8 @@ const Query = {
         }
 
         return await prisma.user.findMany({
+            skip,
+            take,
             where: {
                 name: {
                     contains: query,
@@ -43,15 +47,17 @@ const Query = {
     },
     async posts(
         _parent: any,
-        { query }: { query: string },
+        { query, skip, take }: { query: string; skip: number; take: number },
         { prisma }: any,
         _info: any
     ) {
         if (!query) {
-            return await prisma.post.findMany();
+            return await prisma.post.findMany({ skip, take });
         }
 
         return await prisma.post.findMany({
+            skip,
+            take,
             where: {
                 title: {
                     contains: query,
@@ -64,8 +70,13 @@ const Query = {
             },
         });
     },
-    async comments(_parent: any, _args: any, { prisma }: any, _info: any) {
-        return await prisma.comment.findMany();
+    async comments(
+        _parent: any,
+        { skip, take }: { skip: number; take: number },
+        { prisma }: any,
+        _info: any
+    ) {
+        return await prisma.comment.findMany({ skip, take });
     },
     add(_parent: any, args: { numbers: any[] }, _ctx: any, _info: any) {
         if (args.numbers.length === 0) {
