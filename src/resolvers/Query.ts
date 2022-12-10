@@ -3,14 +3,32 @@ import { getUserId } from "../utils";
 const Query = {
     async users(
         _parent: any,
-        { query, skip, take }: { query: string; skip: number; take: number },
+        {
+            query,
+            skip,
+            take,
+            after,
+        }: { query: string; skip: number; take: number; after: string },
         { prisma }: any,
         _info: any
     ) {
         if (!query) {
+            if (!after) {
+                return await prisma.user.findMany({
+                    skip,
+                    take,
+                    include: {
+                        posts: true,
+                        comments: true,
+                    },
+                });
+            }
             return await prisma.user.findMany({
                 skip,
                 take,
+                cursor: {
+                    id: after,
+                },
                 include: {
                     posts: true,
                     comments: true,
@@ -18,9 +36,33 @@ const Query = {
             });
         }
 
+        if (!after) {
+            return await prisma.user.findMany({
+                skip,
+                take,
+                include: {
+                    posts: true,
+                    comments: true,
+                },
+                where: {
+                    name: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                    email: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                },
+            });
+        }
+
         return await prisma.user.findMany({
             skip,
             take,
+            cursor: {
+                id: after,
+            },
             where: {
                 name: {
                     contains: query,
@@ -47,17 +89,52 @@ const Query = {
     },
     async posts(
         _parent: any,
-        { query, skip, take }: { query: string; skip: number; take: number },
+        {
+            query,
+            skip,
+            take,
+            after,
+        }: { query: string; skip: number; take: number; after: string },
         { prisma }: any,
         _info: any
     ) {
         if (!query) {
-            return await prisma.post.findMany({ skip, take });
+            if (!after) {
+                return await prisma.post.findMany({ skip, take });
+            }
+
+            return await prisma.post.findMany({
+                skip,
+                take,
+                cursor: {
+                    id: after,
+                },
+            });
+        }
+
+        if (!after) {
+            return await prisma.post.findMany({
+                skip,
+                take,
+                where: {
+                    title: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                    body: {
+                        contains: query,
+                        mode: "insensitive",
+                    },
+                },
+            });
         }
 
         return await prisma.post.findMany({
             skip,
             take,
+            cursor: {
+                id: after,
+            },
             where: {
                 title: {
                     contains: query,
@@ -72,11 +149,20 @@ const Query = {
     },
     async comments(
         _parent: any,
-        { skip, take }: { skip: number; take: number },
+        { skip, take, after }: { skip: number; take: number; after: string },
         { prisma }: any,
         _info: any
     ) {
-        return await prisma.comment.findMany({ skip, take });
+        if (!after) {
+            return await prisma.comment.findMany({ skip, take });
+        }
+        return await prisma.comment.findMany({
+            skip,
+            take,
+            cursor: {
+                id: after,
+            },
+        });
     },
     add(_parent: any, args: { numbers: any[] }, _ctx: any, _info: any) {
         if (args.numbers.length === 0) {

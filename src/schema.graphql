@@ -1,9 +1,9 @@
 type Query {
     me: User!
-    users(query: String, skip: Int, take: Int): [User!]!
-    posts(query: String, skip: Int, take: Int): [Post!]!
+    users(query: String, skip: Int, take: Int, after: String): [User!]!
+    posts(query: String, skip: Int, take: Int, after: String): [Post!]!
     add(numbers: [Float!]!): Float!
-    comments(skip: Int, take: Int): [Comment!]!
+    comments(skip: Int, take: Int, after: String): [Comment!]!
 }
 
 type Mutation {
