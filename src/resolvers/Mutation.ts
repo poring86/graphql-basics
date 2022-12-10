@@ -1,9 +1,16 @@
 import { GraphQLYogaError } from "@graphql-yoga/node";
-import { compare, hash } from "bcryptjs";
+import { compare } from "bcryptjs";
 
-import { sign } from "jsonwebtoken";
-
-import { User, Comment, Post } from "../types/global";
+import {
+    User,
+    Post,
+    CreateCommentInput,
+    UpdateCommentInput,
+    CreateUserInput,
+    UpdateUserInput,
+    CreatePostInput,
+    UpdatePostInput,
+} from "../types/global";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
 
 import { generateToken, getUserId, hashedPassword } from "../utils";
@@ -11,7 +18,7 @@ import { generateToken, getUserId, hashedPassword } from "../utils";
 const Mutation = {
     async createUser(
         _parent: any,
-        { data }: { data: User },
+        { data }: { data: CreateUserInput },
         { prisma }: any,
         _info: any
     ) {
@@ -60,7 +67,7 @@ const Mutation = {
     },
     async updateUser(
         _parent: any,
-        { data }: { data: User },
+        { data }: { data: UpdateUserInput },
         { prisma, request }: any,
         _info: any
     ) {
@@ -85,7 +92,7 @@ const Mutation = {
     },
     async createPost(
         _parent: any,
-        { data }: { data: Post },
+        { data }: { data: CreatePostInput },
         { pubsub, prisma, request }: any,
         _info: any
     ) {
@@ -149,7 +156,7 @@ const Mutation = {
     },
     async updatePost(
         _parent: any,
-        { id, data }: { id: string; data: Post },
+        { id, data }: { id: string; data: UpdatePostInput },
         { pubsub, prisma }: any,
         _info: any
     ) {
@@ -226,7 +233,7 @@ const Mutation = {
     },
     async createComment(
         _parent: any,
-        { data }: { data: any },
+        { data }: { data: CreateCommentInput },
         { pubsub, prisma, request }: any,
         _info: any
     ) {
@@ -234,9 +241,8 @@ const Mutation = {
         try {
             const comment = await prisma.comment.create({
                 data: {
-                    text: data.text,
+                    ...data,
                     userId,
-                    postId: data.post,
                 },
             });
 
@@ -286,7 +292,7 @@ const Mutation = {
     },
     async updateComment(
         _parent: any,
-        args: { id: string; data: Comment },
+        args: { id: string; data: UpdateCommentInput },
         { pubsub, prisma }: any,
         _info: any
     ) {

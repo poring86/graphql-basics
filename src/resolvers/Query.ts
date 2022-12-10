@@ -3,11 +3,11 @@ import { getUserId } from "../utils";
 const Query = {
     async users(
         _parent: any,
-        args: { query: string },
+        { query }: { query: string },
         { prisma }: any,
         _info: any
     ) {
-        if (!args.query) {
+        if (!query) {
             return await prisma.user.findMany({
                 include: {
                     posts: true,
@@ -19,11 +19,11 @@ const Query = {
         return await prisma.user.findMany({
             where: {
                 name: {
-                    contains: args.query,
+                    contains: query,
                     mode: "insensitive",
                 },
                 email: {
-                    contains: args.query,
+                    contains: query,
                     mode: "insensitive",
                 },
             },
@@ -43,22 +43,22 @@ const Query = {
     },
     async posts(
         _parent: any,
-        args: { query: string },
+        { query }: { query: string },
         { prisma }: any,
         _info: any
     ) {
-        if (!args.query) {
+        if (!query) {
             return await prisma.post.findMany();
         }
 
         return await prisma.post.findMany({
             where: {
                 title: {
-                    contains: args.query,
+                    contains: query,
                     mode: "insensitive",
                 },
                 body: {
-                    contains: args.query,
+                    contains: query,
                     mode: "insensitive",
                 },
             },

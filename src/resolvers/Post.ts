@@ -1,6 +1,6 @@
 import { Post } from "../types/global";
 const Post = {
-    async author(parent: any, _args: any, { prisma }: any, _info: any) {
+    async author(parent: Post, _args: any, { prisma }: any, _info: any) {
         return await prisma.user.findUnique({
             where: {
                 id: parent.userId,
