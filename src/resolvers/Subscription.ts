@@ -20,21 +20,7 @@ const Subscription = {
         },
     },
     comment: {
-        subscribe(
-            _parent: any,
-            { postId }: any,
-            { db, pubsub }: any,
-            _info: any
-        ) {
-            const post = db.posts.find((post: Post) => {
-                return post.id === postId && post.published;
-            });
-
-            if (!post) {
-                throw new GraphQLYogaError("Post not found");
-            }
-
-            // return pubsub.subscribe(`comment`);
+        subscribe(_parent: any, { postId }: any, { pubsub }: any, _info: any) {
             return pubsub.subscribe(`comment ${postId}`);
         },
     },
