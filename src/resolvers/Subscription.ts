@@ -1,7 +1,3 @@
-import { GraphQLYogaError } from "@graphql-yoga/node";
-
-import { Post } from "../types/global";
-
 const Subscription = {
     count: {
         subscribe(_parent: any, _args: any, { pubsub }: any, _info: any) {
