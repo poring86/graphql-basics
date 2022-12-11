@@ -59,13 +59,17 @@ input UpdateCommentInput {
     text: String!
 }
 
+scalar DateTime
+
 type User {
     id: ID!
     name: String!
     email: String!
     age: Int
     posts: [Post!]!
-    comments: [Comment]
+    comments: [Comment!]!
+    updatedAt: DateTime
+    createdAt: DateTime
 }
 
 type AuthPayload {
