@@ -12,58 +12,15 @@ const Query = {
         { prisma }: any,
         _info: any
     ) {
-        if (!query) {
-            if (!after) {
-                return await prisma.user.findMany({
-                    skip,
-                    take,
-                    include: {
-                        posts: true,
-                        comments: true,
-                    },
-                });
-            }
-            return await prisma.user.findMany({
-                skip,
-                take,
-                cursor: {
-                    id: after,
-                },
-                include: {
-                    posts: true,
-                    comments: true,
-                },
-            });
-        }
-
-        if (!after) {
-            return await prisma.user.findMany({
-                skip,
-                take,
-                include: {
-                    posts: true,
-                    comments: true,
-                },
-                where: {
-                    name: {
-                        contains: query,
-                        mode: "insensitive",
-                    },
-                    email: {
-                        contains: query,
-                        mode: "insensitive",
-                    },
-                },
-            });
-        }
-
-        return await prisma.user.findMany({
+        const queryObject: any = {
             skip,
             take,
-            cursor: {
-                id: after,
-            },
-            where: {
+        };
+
+        if (after) queryObject.cursor = { id: after };
+
+        if (query)
+            queryObject.where = {
                 name: {
                     contains: query,
                     mode: "insensitive",
@@ -72,8 +29,13 @@ const Query = {
                     contains: query,
                     mode: "insensitive",
                 },
-            },
-        });
+            };
+
+        try {
+            return await prisma.user.findMany(queryObject);
+        } catch (e) {
+            console.log(e);
+        }
     },
     async me(_parent: any, _args: any, { request, prisma }: any, _info: any) {
         const userId = getUserId(request);
