@@ -60,44 +60,15 @@ const Query = {
         { prisma }: any,
         _info: any
     ) {
-        if (!query) {
-            if (!after) {
-                return await prisma.post.findMany({ skip, take });
-            }
-
-            return await prisma.post.findMany({
-                skip,
-                take,
-                cursor: {
-                    id: after,
-                },
-            });
-        }
-
-        if (!after) {
-            return await prisma.post.findMany({
-                skip,
-                take,
-                where: {
-                    title: {
-                        contains: query,
-                        mode: "insensitive",
-                    },
-                    body: {
-                        contains: query,
-                        mode: "insensitive",
-                    },
-                },
-            });
-        }
-
-        return await prisma.post.findMany({
+        const queryObject: any = {
             skip,
             take,
-            cursor: {
-                id: after,
-            },
-            where: {
+        };
+
+        if (after) queryObject.cursor = { id: after };
+
+        if (query)
+            queryObject.where = {
                 title: {
                     contains: query,
                     mode: "insensitive",
@@ -106,8 +77,9 @@ const Query = {
                     contains: query,
                     mode: "insensitive",
                 },
-            },
-        });
+            };
+
+        return await prisma.post.findMany(queryObject);
     },
     async comments(
         _parent: any,
