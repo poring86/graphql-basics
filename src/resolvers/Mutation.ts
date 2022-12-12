@@ -20,7 +20,7 @@ const Mutation = {
         { prisma }: any,
         _info: any
     ) {
-        const password = hashedPassword(data.password);
+        const password = await hashedPassword(data.password);
 
         try {
             const user = await prisma.user.create({
@@ -30,11 +30,14 @@ const Mutation = {
                 },
             });
 
+            const token = generateToken(user.id);
+
             return {
                 user,
-                token: generateToken(user.id),
+                token,
             };
         } catch (e) {
+            console.log("error", e);
             if (e instanceof PrismaClientKnownRequestError) {
                 if (e.code === "P2002") {
                     throw new GraphQLYogaError("Email Taken");

@@ -17,7 +17,7 @@ function getUserId(request: any) {
 const hashedPassword = async (password: string) => await hash(password, 10);
 
 const generateToken = (userId: string) => {
-    sign({ userId }, APP_SECRET, { expiresIn: "7 days" });
+    return sign({ userId }, APP_SECRET, { expiresIn: "7 days" });
 };
 
 export { APP_SECRET, getUserId, hashedPassword, generateToken };

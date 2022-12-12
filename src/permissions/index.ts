@@ -1,4 +1,3 @@
-import { GraphQLYogaError } from "@graphql-yoga/node";
 import { rule, shield } from "graphql-shield";
 import { getUserId } from "../utils";
 

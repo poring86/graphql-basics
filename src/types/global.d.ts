@@ -1,4 +1,4 @@
-export interface User {
+export interface UserType {
     id: string;
     name: string;
     email: string;
@@ -6,7 +6,7 @@ export interface User {
     password: string;
 }
 
-export interface Post {
+export interface PostType {
     id: string;
     title: string;
     body: string;
@@ -14,7 +14,7 @@ export interface Post {
     userId: string;
 }
 
-export interface Comment {
+export interface CommentType {
     id: string;
     text: string;
     userId: string;
@@ -53,4 +53,8 @@ export interface CreateCommentInput {
 
 export interface UpdateCommentInput {
     text: string;
+}
+
+declare global {
+    var httpServer: any;
 }
