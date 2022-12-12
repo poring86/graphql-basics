@@ -103,19 +103,6 @@ const Query = {
             console.log(e);
         }
     },
-    add(_parent: any, args: { numbers: any[] }, _ctx: any, _info: any) {
-        if (args.numbers.length === 0) {
-            return 0;
-        }
-
-        const value = args.numbers.reduce(
-            (accumulator: any, currentValue: any) => {
-                return accumulator + currentValue;
-            }
-        );
-
-        return value;
-    },
 };
 
 export { Query as default };
