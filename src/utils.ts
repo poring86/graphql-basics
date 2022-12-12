@@ -1,4 +1,5 @@
 import { hash } from "bcryptjs";
+import { GraphQLYogaError } from "graphql-yoga";
 import { sign, verify } from "jsonwebtoken";
 
 const APP_SECRET = require("dotenv").config().parsed.APP_SECRET;
@@ -14,7 +15,12 @@ function getUserId(request: any) {
     }
 }
 
-const hashedPassword = async (password: string) => await hash(password, 10);
+const hashedPassword = async (password: string) => {
+    if (password.length < 8) {
+        throw new GraphQLYogaError("Password must be 8 characters or longer.");
+    }
+    await hash(password, 10);
+};
 
 const generateToken = (userId: string) => {
     return sign({ userId }, APP_SECRET, { expiresIn: "7 days" });

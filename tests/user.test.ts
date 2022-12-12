@@ -44,7 +44,7 @@ test("Should create a new user", async () => {
                 data: {
                     name: "Test"
                     email: "test@test.com"
-                    password: "1234567"
+                    password: "12345678"
                 }
             ) {
                 token
@@ -97,4 +97,26 @@ test("Should not login with bad credentials", async () => {
     `;
 
     await expect(client.request(login)).rejects.toThrow();
+});
+
+test("Should not signup user with short password", async () => {
+    const mutation = gql`
+        mutation {
+            createUser(
+                data: {
+                    name: "Matt"
+                    email: "matt@example.com"
+                    password: "pass"
+                }
+            ) {
+                token
+                user {
+                    id
+                    name
+                }
+            }
+        }
+    `;
+
+    await expect(client.request(mutation)).rejects.toThrow();
 });
