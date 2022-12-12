@@ -79,7 +79,11 @@ const Query = {
                 },
             };
 
-        return await prisma.post.findMany(queryObject);
+        try {
+            return await prisma.post.findMany(queryObject);
+        } catch (e) {
+            console.log(e);
+        }
     },
     async comments(
         _parent: any,
@@ -87,16 +91,17 @@ const Query = {
         { prisma }: any,
         _info: any
     ) {
-        if (!after) {
-            return await prisma.comment.findMany({ skip, take });
-        }
-        return await prisma.comment.findMany({
+        const queryObject: any = {
             skip,
             take,
-            cursor: {
-                id: after,
-            },
-        });
+        };
+        if (after) queryObject.cursor = { id: after };
+
+        try {
+            return await prisma.comment.findMany(queryObject);
+        } catch (e) {
+            console.log(e);
+        }
     },
     add(_parent: any, args: { numbers: any[] }, _ctx: any, _info: any) {
         if (args.numbers.length === 0) {
