@@ -1,6 +1,7 @@
 import "cross-fetch/polyfill";
 import { GraphQLClient, gql } from "graphql-request";
 import { PrismaClient } from "@prisma/client";
+import { hashedPassword } from "../src/utils";
 const prisma = new PrismaClient();
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
@@ -8,10 +9,12 @@ const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 beforeEach(async () => {
     await prisma.user.deleteMany();
 
+    const password = await hashedPassword("23423423423423");
+
     const data: any = {
         name: "Elsa Prisma",
         email: "elsa@prisma.io",
-        password: "23423423423423",
+        password,
         posts: {
             create: [
                 {
@@ -79,4 +82,19 @@ test("Should show published posts", async () => {
     const response = await client.request(query);
 
     expect(response.posts.length).toBeGreaterThan(0);
+});
+
+test("Should not login with bad credentials", async () => {
+    const login = gql`
+        mutation {
+            login(email: "invalid@invalid.com", password: "invalid") {
+                token
+                user {
+                    id
+                }
+            }
+        }
+    `;
+
+    await expect(client.request(login)).rejects.toThrow();
 });
