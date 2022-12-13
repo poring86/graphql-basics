@@ -41,9 +41,16 @@ test("Should fetch user posts", async () => {
 test("Should be able to update own post", async () => {
     client.setHeader("authorization", `Bearer ${userOne.token}`);
 
+    const variables = {
+        id: post1.id,
+        data: {
+            published: false,
+        },
+    };
+
     const mutation = gql`
-        mutation {
-            updatePost(id: "${post1.id}", data: { published: false }){
+        mutation ($id: ID!, $data: UpdatePostInput!) {
+            updatePost(id: $id, data: $data) {
                 id
                 title
                 body
@@ -52,7 +59,7 @@ test("Should be able to update own post", async () => {
         }
     `;
 
-    const { updatePost } = await client.request(mutation);
+    const { updatePost } = await client.request(mutation, variables);
 
     expect(updatePost.published).toBe(false);
 });
@@ -60,15 +67,17 @@ test("Should be able to update own post", async () => {
 test("Should create a new post", async () => {
     client.setHeader("authorization", `Bearer ${userOne.token}`);
 
+    const variables = {
+        data: {
+            title: "Learn Jest",
+            body: "Automated tests",
+            published: true,
+        },
+    };
+
     const mutation = gql`
-        mutation {
-            createPost(
-                data: {
-                    title: "Learn Jest"
-                    body: "Automated tests"
-                    published: true
-                }
-            ) {
+        mutation ($data: CreatePostInput!) {
+            createPost(data: $data) {
                 id
                 title
                 body
@@ -77,7 +86,7 @@ test("Should create a new post", async () => {
         }
     `;
 
-    const { createPost } = await client.request(mutation);
+    const { createPost } = await client.request(mutation, variables);
 
     expect(createPost.title).toBe("Learn Jest");
     expect(createPost.body).toBe("Automated tests");
@@ -87,9 +96,13 @@ test("Should create a new post", async () => {
 test("Should delete post", async () => {
     client.setHeader("authorization", `Bearer ${userOne.token}`);
 
+    const variables = {
+        id: post2.id,
+    };
+
     const mutation = gql`
-        mutation{
-            deletePost(id: "${post2.id}"){
+        mutation ($id: ID!) {
+            deletePost(id: $id) {
                 id
                 title
                 body
@@ -98,7 +111,7 @@ test("Should delete post", async () => {
         }
     `;
 
-    await client.request(mutation);
+    await client.request(mutation, variables);
 
     const deletePost = await prisma.post.findUnique({
         where: {

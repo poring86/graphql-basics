@@ -321,10 +321,15 @@ const Mutation = {
             }
         }
     },
-    async login(_parent: unknown, args: any, { prisma }: any, _info: unknown) {
+    async login(
+        _parent: unknown,
+        { data }: any,
+        { prisma }: any,
+        _info: unknown
+    ) {
         const user = await prisma.user.findUnique({
             where: {
-                email: args.email,
+                email: data.email,
             },
         });
 
@@ -332,7 +337,7 @@ const Mutation = {
             throw new GraphQLYogaError("User not found");
         }
 
-        const passwordValid = await compare(args.password, user.password);
+        const passwordValid = await compare(data.password, user.password);
 
         if (!passwordValid) {
             throw new GraphQLYogaError("Invalid password");
