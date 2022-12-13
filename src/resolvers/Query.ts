@@ -90,6 +90,49 @@ const Query = {
             console.log(e);
         }
     },
+    async myPosts(
+        _parent: unknown,
+        {
+            query,
+            skip,
+            take,
+            after,
+        }: { query: string; skip: number; take: number; after: string },
+        { prisma, request }: any,
+        _info: unknown
+    ) {
+        const userId = getUserId(request);
+
+        const queryObject: any = {
+            skip,
+            take,
+            where: {
+                userId,
+            },
+        };
+
+        if (after) queryObject.cursor = { id: after };
+
+        if (query)
+            queryObject.where = {
+                userId,
+
+                title: {
+                    contains: query,
+                    mode: "insensitive",
+                },
+                body: {
+                    contains: query,
+                    mode: "insensitive",
+                },
+            };
+
+        try {
+            return await prisma.post.findMany(queryObject);
+        } catch (e) {
+            console.log(e);
+        }
+    },
     async comments(
         _parent: unknown,
         { skip, take, after }: { skip: number; take: number; after: string },
