@@ -15,10 +15,10 @@ import { generateToken, getUserId, hashedPassword } from "../utils";
 
 const Mutation = {
     async createUser(
-        _parent: any,
+        _parent: unknown,
         { data }: { data: CreateUserInput },
         { prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         const password = await hashedPassword(data.password);
 
@@ -46,10 +46,10 @@ const Mutation = {
         }
     },
     async deleteUser(
-        _parent: any,
-        _args: any,
+        _parent: unknown,
+        _args: unknown,
         { prisma, request }: any,
-        _info: any
+        _info: unknown
     ) {
         const userId = getUserId(request);
         try {
@@ -67,10 +67,10 @@ const Mutation = {
         }
     },
     async updateUser(
-        _parent: any,
+        _parent: unknown,
         { data }: { data: UpdateUserInput },
         { prisma, request }: any,
-        _info: any
+        _info: unknown
     ) {
         const userId = getUserId(request);
         try {
@@ -92,10 +92,10 @@ const Mutation = {
         }
     },
     async createPost(
-        _parent: any,
+        _parent: unknown,
         { data }: { data: CreatePostInput },
         { pubsub, prisma, request }: any,
-        _info: any
+        _info: unknown
     ) {
         const userId = getUserId(request);
         try {
@@ -125,10 +125,10 @@ const Mutation = {
         }
     },
     async deletePost(
-        _parent: any,
+        _parent: unknown,
         { id }: { id: string },
         { pubsub, prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         try {
             const post = await prisma.post.delete({
@@ -156,10 +156,10 @@ const Mutation = {
         }
     },
     async updatePost(
-        _parent: any,
+        _parent: unknown,
         { id, data }: { id: string; data: UpdatePostInput },
         { pubsub, prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         let post = await prisma.post.findUnique({
             where: {
@@ -233,10 +233,10 @@ const Mutation = {
         return post;
     },
     async createComment(
-        _parent: any,
+        _parent: unknown,
         { data }: { data: CreateCommentInput },
         { pubsub, prisma, request }: any,
-        _info: any
+        _info: unknown
     ) {
         const userId = getUserId(request);
         try {
@@ -264,10 +264,10 @@ const Mutation = {
         }
     },
     async deleteComment(
-        _parent: any,
+        _parent: unknown,
         { id }: { id: string },
         { pubsub, prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         try {
             const comment = await prisma.comment.delete({
@@ -292,10 +292,10 @@ const Mutation = {
         }
     },
     async updateComment(
-        _parent: any,
+        _parent: unknown,
         args: { id: string; data: UpdateCommentInput },
         { pubsub, prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         try {
             const comment = await prisma.comment.update({
@@ -321,7 +321,7 @@ const Mutation = {
             }
         }
     },
-    async login(_parent: any, args: any, { prisma }: any, _info: any) {
+    async login(_parent: unknown, args: any, { prisma }: any, _info: unknown) {
         const user = await prisma.user.findUnique({
             where: {
                 email: args.email,

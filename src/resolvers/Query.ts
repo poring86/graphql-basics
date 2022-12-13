@@ -2,7 +2,7 @@ import { getUserId } from "../utils";
 
 const Query = {
     async users(
-        _parent: any,
+        _parent: unknown,
         {
             query,
             skip,
@@ -10,7 +10,7 @@ const Query = {
             after,
         }: { query: string; skip: number; take: number; after: string },
         { prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         const queryObject: any = {
             skip,
@@ -37,7 +37,12 @@ const Query = {
             console.log(e);
         }
     },
-    async me(_parent: any, _args: any, { request, prisma }: any, _info: any) {
+    async me(
+        _parent: unknown,
+        _args: unknown,
+        { request, prisma }: any,
+        _info: unknown
+    ) {
         const userId = getUserId(request);
         try {
             return await prisma.user.findUnique({
@@ -50,7 +55,7 @@ const Query = {
         }
     },
     async posts(
-        _parent: any,
+        _parent: unknown,
         {
             query,
             skip,
@@ -58,7 +63,7 @@ const Query = {
             after,
         }: { query: string; skip: number; take: number; after: string },
         { prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         const queryObject: any = {
             skip,
@@ -86,10 +91,10 @@ const Query = {
         }
     },
     async comments(
-        _parent: any,
+        _parent: unknown,
         { skip, take, after }: { skip: number; take: number; after: string },
         { prisma }: any,
-        _info: any
+        _info: unknown
     ) {
         const queryObject: any = {
             skip,

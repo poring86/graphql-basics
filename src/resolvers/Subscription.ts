@@ -1,6 +1,11 @@
 const Subscription = {
     count: {
-        subscribe(_parent: any, _args: any, { pubsub }: any, _info: any) {
+        subscribe(
+            _parent: unknown,
+            _args: unknown,
+            { pubsub }: any,
+            _info: unknown
+        ) {
             let count = 0;
 
             setInterval(() => {
@@ -16,12 +21,22 @@ const Subscription = {
         },
     },
     comment: {
-        subscribe(_parent: any, { postId }: any, { pubsub }: any, _info: any) {
+        subscribe(
+            _parent: unknown,
+            { postId }: any,
+            { pubsub }: any,
+            _info: unknown
+        ) {
             return pubsub.subscribe(`comment ${postId}`);
         },
     },
     post: {
-        subscribe(_: any, __: any, { pubsub }: any) {
+        subscribe(
+            _parent: unknown,
+            _args: unknown,
+            { pubsub }: any,
+            _info: unknown
+        ) {
             return pubsub.subscribe("post");
         },
     },
