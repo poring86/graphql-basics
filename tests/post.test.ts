@@ -16,9 +16,9 @@ test("Should show published posts", async () => {
         }
     `;
 
-    const response = await client.request(query);
+    const { posts } = await client.request(query);
 
-    expect(response.posts.length).toBeGreaterThan(0);
+    expect(posts.length).toBeGreaterThan(0);
 });
 
 test("Should fetch user posts", async () => {
@@ -31,9 +31,9 @@ test("Should fetch user posts", async () => {
         }
     `;
 
-    const response = await client.request(query);
+    const { myPosts } = await client.request(query);
 
-    expect(response.myPosts.length).toBe(2);
+    expect(myPosts.length).toBe(2);
 });
 
 test("Should be able to update own post", async () => {
@@ -49,7 +49,33 @@ test("Should be able to update own post", async () => {
         }
     `;
 
-    const response = await client.request(mutation);
+    const { updatePost } = await client.request(mutation);
 
-    expect(response.updatePost.published).toBe(false);
+    expect(updatePost.published).toBe(false);
+});
+
+test("Should create a new post", async () => {
+    client.setHeader("authorization", `Bearer ${userOne.token}`);
+    const mutation = gql`
+        mutation {
+            createPost(
+                data: {
+                    title: "Learn Jest"
+                    body: "Automated tests"
+                    published: true
+                }
+            ) {
+                id
+                title
+                body
+                published
+            }
+        }
+    `;
+
+    const { createPost } = await client.request(mutation);
+
+    expect(createPost.title).toBe("Learn Jest");
+    expect(createPost.body).toBe("Automated tests");
+    expect(createPost.published).toBe(true);
 });
