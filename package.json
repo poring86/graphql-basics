@@ -6,7 +6,7 @@
     "scripts": {
         "start": "nodemon src/index.ts",
         "devStart": "nodemon index.ts",
-        "test": "jest"
+        "test": "jest --runInBand --watch"
     },
     "jest": {
         "globalSetup": "./tests/jest/globalSetup.ts",

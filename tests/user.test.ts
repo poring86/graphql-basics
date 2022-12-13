@@ -1,41 +1,13 @@
 import "cross-fetch/polyfill";
 import { GraphQLClient, gql } from "graphql-request";
 import { PrismaClient } from "@prisma/client";
-import { hashedPassword } from "../src/utils";
+import seedDatabase from "./utils/seedDatabase";
+
 const prisma = new PrismaClient();
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 
-beforeEach(async () => {
-    await prisma.user.deleteMany();
-
-    const password = await hashedPassword("23423423423423");
-
-    const data: any = {
-        name: "Elsa Prisma",
-        email: "elsa@prisma.io",
-        password,
-        posts: {
-            create: [
-                {
-                    title: "Include this post!",
-                    body: "Body exaple",
-                    published: true,
-                },
-                {
-                    title: "Include this post 2!",
-                    body: "Body exaple 2",
-                    published: true,
-                },
-            ],
-        },
-    };
-    await prisma.user.create({
-        data: {
-            ...data,
-        },
-    });
-});
+beforeEach(seedDatabase);
 
 test("Should create a new user", async () => {
     const mutation = gql`
@@ -68,20 +40,6 @@ test("Should create a new user", async () => {
 
     expect(Boolean(user)).toBe(true);
     expect(user?.name).toBe("Test");
-});
-
-test("Should show published posts", async () => {
-    const query = gql`
-        query {
-            posts {
-                id
-            }
-        }
-    `;
-
-    const response = await client.request(query);
-
-    expect(response.posts.length).toBeGreaterThan(0);
 });
 
 test("Should not login with bad credentials", async () => {
