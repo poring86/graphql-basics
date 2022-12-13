@@ -1,11 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { gql, GraphQLClient } from "graphql-request";
-import { CreateUserResponse } from "../../src/types/global";
+import { CreateUserResponse, PostType } from "../../src/types/global";
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 const prisma = new PrismaClient();
 
 let userOne: CreateUserResponse;
+let post1: PostType;
+let post2: PostType;
 
 const seedDatabase = async () => {
     await prisma.user.deleteMany();
@@ -46,11 +48,13 @@ const seedDatabase = async () => {
             ) {
                 id
                 title
+                body
+                published
             }
         }
     `;
 
-    await client.request(mutationPost1);
+    post1 = await (await client.request(mutationPost1)).createPost;
 
     const mutationPost2 = gql`
         mutation {
@@ -58,16 +62,18 @@ const seedDatabase = async () => {
                 data: {
                     title: "Graphql tutorial"
                     body: "How to use graphql"
-                    published: true
+                    published: false
                 }
             ) {
                 id
                 title
+                body
+                published
             }
         }
     `;
 
-    await client.request(mutationPost2);
+    post2 = await (await client.request(mutationPost1)).createPost;
 };
 
-export { seedDatabase as default, userOne };
+export { seedDatabase as default, userOne, post1, post2 };

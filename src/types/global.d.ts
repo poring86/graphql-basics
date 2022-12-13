@@ -40,11 +40,6 @@ export interface CreatePostInput {
     published: boolean;
 }
 
-export interface CreateUserResponse {
-    token: string;
-    user: UserType;
-}
-
 export interface UpdatePostInput {
     title: string;
     body: string;
@@ -58,6 +53,11 @@ export interface CreateCommentInput {
 
 export interface UpdateCommentInput {
     text: string;
+}
+
+export interface CreateUserResponse {
+    token: string;
+    user: UserType;
 }
 
 declare global {
