@@ -107,6 +107,4 @@ test("Should delete post", async () => {
     });
 
     expect(deletePost).toBe(null);
-
-    console.log("deletePost", deletePost);
 });
