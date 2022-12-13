@@ -31,9 +31,7 @@ const seedDatabase = async () => {
         }
     `;
 
-    const responseUser = await client.request(mutationUser);
-
-    userOne = responseUser.createUser;
+    userOne = (await client.request(mutationUser)).createUser;
 
     client.setHeader("authorization", `Bearer ${userOne.token}`);
 
@@ -54,7 +52,7 @@ const seedDatabase = async () => {
         }
     `;
 
-    post1 = await (await client.request(mutationPost1)).createPost;
+    post1 = (await client.request(mutationPost1)).createPost;
 
     const mutationPost2 = gql`
         mutation {
@@ -73,7 +71,7 @@ const seedDatabase = async () => {
         }
     `;
 
-    post2 = await (await client.request(mutationPost1)).createPost;
+    post2 = (await client.request(mutationPost1)).createPost;
 };
 
 export { seedDatabase as default, userOne, post1, post2 };
