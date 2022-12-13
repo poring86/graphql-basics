@@ -2,6 +2,7 @@ import "cross-fetch/polyfill";
 import { GraphQLClient, gql } from "graphql-request";
 import { PrismaClient } from "@prisma/client";
 import seedDatabase from "./utils/seedDatabase";
+import { userOne } from "./utils/seedDatabase";
 
 const prisma = new PrismaClient();
 
@@ -77,4 +78,24 @@ test("Should not signup user with short password", async () => {
     `;
 
     await expect(client.request(mutation)).rejects.toThrow();
+});
+
+test("Should fetch user profile", async () => {
+    client.setHeader("authorization", `Bearer ${userOne.token}`);
+
+    const query = gql`
+        query {
+            me {
+                id
+                name
+                email
+            }
+        }
+    `;
+
+    const { me: profile } = await client.request(query);
+
+    expect(profile.id).toBe(userOne.user.id);
+    expect(profile.name).toBe(userOne.user.name);
+    expect(profile.email).toBe(userOne.user.email);
 });

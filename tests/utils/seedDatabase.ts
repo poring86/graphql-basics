@@ -1,36 +1,73 @@
 import { PrismaClient } from "@prisma/client";
-import { hashedPassword } from "../../src/utils";
+import { gql, GraphQLClient } from "graphql-request";
+import { CreateUserResponse } from "../../src/types/global";
+
+const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 const prisma = new PrismaClient();
+
+let userOne: CreateUserResponse;
 
 const seedDatabase = async () => {
     await prisma.user.deleteMany();
 
-    const password = await hashedPassword("23423423423423");
+    const mutationUser = gql`
+        mutation {
+            createUser(
+                data: {
+                    name: "Elsa Prisma"
+                    email: "elsa@prisma.io"
+                    password: "12345678"
+                }
+            ) {
+                token
+                user {
+                    id
+                    name
+                    email
+                }
+            }
+        }
+    `;
 
-    const data: any = {
-        name: "Elsa Prisma",
-        email: "elsa@prisma.io",
-        password,
-        posts: {
-            create: [
-                {
-                    title: "Include this post!",
-                    body: "Body exaple",
-                    published: true,
-                },
-                {
-                    title: "Include this post 2!",
-                    body: "Body exaple 2",
-                    published: true,
-                },
-            ],
-        },
-    };
-    await prisma.user.create({
-        data: {
-            ...data,
-        },
-    });
+    const responseUser = await client.request(mutationUser);
+
+    userOne = responseUser.createUser;
+
+    client.setHeader("authorization", `Bearer ${userOne.token}`);
+
+    const mutationPost1 = gql`
+        mutation {
+            createPost(
+                data: {
+                    title: "Prisma tutorial"
+                    body: "How to use prisma"
+                    published: true
+                }
+            ) {
+                id
+                title
+            }
+        }
+    `;
+
+    await client.request(mutationPost1);
+
+    const mutationPost2 = gql`
+        mutation {
+            createPost(
+                data: {
+                    title: "Graphql tutorial"
+                    body: "How to use graphql"
+                    published: true
+                }
+            ) {
+                id
+                title
+            }
+        }
+    `;
+
+    await client.request(mutationPost2);
 };
 
-export { seedDatabase as default };
+export { seedDatabase as default, userOne };

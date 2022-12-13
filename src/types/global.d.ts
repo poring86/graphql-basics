@@ -40,6 +40,11 @@ export interface CreatePostInput {
     published: boolean;
 }
 
+export interface CreateUserResponse {
+    token: string;
+    user: UserType;
+}
+
 export interface UpdatePostInput {
     title: string;
     body: string;
