@@ -1,13 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { GraphQLClient } from "graphql-request";
 import {
     CreateUserInput,
     CreateUserResponse,
     PostType,
 } from "../../src/types/global";
 import { generateToken, hashedPassword } from "../../src/utils";
-
-const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 const prisma = new PrismaClient();
 
 let userOne: CreateUserResponse = {
