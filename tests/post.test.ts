@@ -3,6 +3,13 @@ import { PrismaClient } from "@prisma/client";
 import { GraphQLClient, gql } from "graphql-request";
 import seedDatabase, { post1, post2 } from "./utils/seedDatabase";
 import { userOne } from "./utils/seedDatabase";
+import {
+    createPostMutation,
+    deletePostMutation,
+    postsQuery,
+    myPostsQuery,
+    updatePostMutation,
+} from "./utils/operations";
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 const prisma = new PrismaClient();
@@ -10,30 +17,15 @@ const prisma = new PrismaClient();
 beforeEach(seedDatabase);
 
 test("Should show published posts", async () => {
-    const query = gql`
-        query {
-            posts {
-                id
-            }
-        }
-    `;
-
-    const { posts } = await client.request(query);
+    const { posts } = await client.request(postsQuery);
 
     expect(posts.length).toBeGreaterThan(0);
 });
 
 test("Should fetch user posts", async () => {
     client.setHeader("authorization", `Bearer ${userOne.token}`);
-    const query = gql`
-        query {
-            myPosts {
-                id
-            }
-        }
-    `;
 
-    const { myPosts } = await client.request(query);
+    const { myPosts } = await client.request(myPostsQuery);
 
     expect(myPosts.length).toBe(2);
 });
@@ -48,18 +40,7 @@ test("Should be able to update own post", async () => {
         },
     };
 
-    const mutation = gql`
-        mutation ($id: ID!, $data: UpdatePostInput!) {
-            updatePost(id: $id, data: $data) {
-                id
-                title
-                body
-                published
-            }
-        }
-    `;
-
-    const { updatePost } = await client.request(mutation, variables);
+    const { updatePost } = await client.request(updatePostMutation, variables);
 
     expect(updatePost.published).toBe(false);
 });
@@ -75,18 +56,7 @@ test("Should create a new post", async () => {
         },
     };
 
-    const mutation = gql`
-        mutation ($data: CreatePostInput!) {
-            createPost(data: $data) {
-                id
-                title
-                body
-                published
-            }
-        }
-    `;
-
-    const { createPost } = await client.request(mutation, variables);
+    const { createPost } = await client.request(createPostMutation, variables);
 
     expect(createPost.title).toBe("Learn Jest");
     expect(createPost.body).toBe("Automated tests");
@@ -100,18 +70,7 @@ test("Should delete post", async () => {
         id: post2.id,
     };
 
-    const mutation = gql`
-        mutation ($id: ID!) {
-            deletePost(id: $id) {
-                id
-                title
-                body
-                published
-            }
-        }
-    `;
-
-    await client.request(mutation, variables);
+    await client.request(deletePostMutation, variables);
 
     const deletePost = await prisma.post.findUnique({
         where: {

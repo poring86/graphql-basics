@@ -3,6 +3,11 @@ import { GraphQLClient, gql } from "graphql-request";
 import { PrismaClient } from "@prisma/client";
 import seedDatabase from "./utils/seedDatabase";
 import { userOne } from "./utils/seedDatabase";
+import {
+    createUserMutation,
+    loginMutation,
+    profileQuery,
+} from "./utils/operations";
 
 const prisma = new PrismaClient();
 
@@ -25,6 +30,7 @@ test("Should create a new user", async () => {
                 user {
                     id
                     name
+                    email
                 }
             }
         }
@@ -51,18 +57,8 @@ test("Should not login with bad credentials", async () => {
             password: "invalid",
         },
     };
-    const login = gql`
-        mutation ($data: LoginUserInput!) {
-            login(data: $data) {
-                token
-                user {
-                    id
-                }
-            }
-        }
-    `;
 
-    await expect(client.request(login, variables)).rejects.toThrow();
+    await expect(client.request(loginMutation, variables)).rejects.toThrow();
 });
 
 test("Should not signup user with short password", async () => {
@@ -74,35 +70,15 @@ test("Should not signup user with short password", async () => {
         },
     };
 
-    const mutation = gql`
-        mutation ($data: CreateUserInput) {
-            createUser(data: $data) {
-                token
-                user {
-                    id
-                    name
-                }
-            }
-        }
-    `;
-
-    await expect(client.request(mutation, variables)).rejects.toThrow();
+    await expect(
+        client.request(createUserMutation, variables)
+    ).rejects.toThrow();
 });
 
 test("Should fetch user profile", async () => {
     client.setHeader("authorization", `Bearer ${userOne.token}`);
 
-    const query = gql`
-        query {
-            me {
-                id
-                name
-                email
-            }
-        }
-    `;
-
-    const { me: profile } = await client.request(query);
+    const { me: profile } = await client.request(profileQuery);
 
     expect(profile.id).toBe(userOne.user.id);
     expect(profile.name).toBe(userOne.user.name);

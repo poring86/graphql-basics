@@ -12,6 +12,14 @@ let post2: PostType;
 const seedDatabase = async () => {
     await prisma.user.deleteMany();
 
+    const variablesUser1 = {
+        data: {
+            name: "Elsa Prisma",
+            email: "elsa@prisma.io",
+            password: "12345678",
+        },
+    };
+
     const mutationUser = gql`
         mutation {
             createUser(
@@ -71,7 +79,7 @@ const seedDatabase = async () => {
         }
     `;
 
-    post2 = (await client.request(mutationPost1)).createPost;
+    post2 = (await client.request(mutationPost2)).createPost;
 };
 
 export { seedDatabase as default, userOne, post1, post2 };
