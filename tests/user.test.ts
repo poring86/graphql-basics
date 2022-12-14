@@ -80,7 +80,7 @@ test("Should fetch user profile", async () => {
 
     const { me: profile } = await client.request(profileQuery);
 
-    expect(profile.id).toBe(userOne.user.id);
-    expect(profile.name).toBe(userOne.user.name);
-    expect(profile.email).toBe(userOne.user.email);
+    expect(profile.id).toBe(userOne.user?.id);
+    expect(profile.name).toBe(userOne.user?.name);
+    expect(profile.email).toBe(userOne.user?.email);
 });

@@ -1,85 +1,88 @@
 import { PrismaClient } from "@prisma/client";
-import { gql, GraphQLClient } from "graphql-request";
-import { CreateUserResponse, PostType } from "../../src/types/global";
+import { GraphQLClient } from "graphql-request";
+import {
+    CreateUserInput,
+    CreateUserResponse,
+    PostType,
+} from "../../src/types/global";
+import { generateToken, hashedPassword } from "../../src/utils";
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
 const prisma = new PrismaClient();
 
-let userOne: CreateUserResponse;
+let userOne: CreateUserResponse = {
+    user: undefined,
+    token: undefined,
+};
+let userTwo: CreateUserResponse = {
+    user: undefined,
+    token: undefined,
+};
 let post1: PostType;
 let post2: PostType;
+let comment1: any;
+let comment2: any;
 
 const seedDatabase = async () => {
     await prisma.user.deleteMany();
 
-    const variablesUser1 = {
-        data: {
-            name: "Elsa Prisma",
-            email: "elsa@prisma.io",
-            password: "12345678",
-        },
+    const userInputOne: CreateUserInput = {
+        name: "Elsa Prisma",
+        email: "elsa@prisma.io",
+        password: await hashedPassword("12345678"),
     };
+    userOne.user = await prisma.user.create({
+        data: userInputOne,
+    });
+    userOne.token = generateToken(userOne.user.id);
 
-    const mutationUser = gql`
-        mutation {
-            createUser(
-                data: {
-                    name: "Elsa Prisma"
-                    email: "elsa@prisma.io"
-                    password: "12345678"
-                }
-            ) {
-                token
-                user {
-                    id
-                    name
-                    email
-                }
-            }
-        }
-    `;
+    const userInputTwo: CreateUserInput = {
+        name: "John Graphql",
+        email: "john@graphql.io",
+        password: await hashedPassword("12345678"),
+    };
+    userTwo.user = await prisma.user.create({
+        data: userInputTwo,
+    });
+    userTwo.token = generateToken(userTwo.user.id);
 
-    userOne = (await client.request(mutationUser)).createUser;
+    const postInputOne: any = {
+        title: "Prisma tutorial",
+        body: "How to use prisma",
+        published: true,
+        userId: userOne.user.id,
+    };
+    post1 = await prisma.post.create({
+        data: postInputOne,
+    });
 
-    client.setHeader("authorization", `Bearer ${userOne.token}`);
+    const postInputTwo: any = {
+        title: "Graphql tutorial",
+        body: "How to use graphql",
+        published: true,
+        userId: userOne.user.id,
+    };
+    post2 = await prisma.post.create({
+        data: postInputTwo,
+    });
 
-    const mutationPost1 = gql`
-        mutation {
-            createPost(
-                data: {
-                    title: "Prisma tutorial"
-                    body: "How to use prisma"
-                    published: true
-                }
-            ) {
-                id
-                title
-                body
-                published
-            }
-        }
-    `;
+    const commentInputOne: any = {
+        text: "Comment 1",
+        userId: userOne.user.id,
+        postId: post1.id,
+    };
+    comment1 = await prisma.comment.create({
+        data: commentInputOne,
+    });
 
-    post1 = (await client.request(mutationPost1)).createPost;
-
-    const mutationPost2 = gql`
-        mutation {
-            createPost(
-                data: {
-                    title: "Graphql tutorial"
-                    body: "How to use graphql"
-                    published: false
-                }
-            ) {
-                id
-                title
-                body
-                published
-            }
-        }
-    `;
-
-    post2 = (await client.request(mutationPost2)).createPost;
+    const commentInputTwo: any = {
+        text: "Comment 1",
+        userId: userTwo.user.id,
+        postId: post1.id,
+    };
+    comment2 = await prisma.comment.create({
+        data: commentInputTwo,
+    });
 };
 
-export { seedDatabase as default, userOne, post1, post2 };
+export { seedDatabase as default, userOne, post1, post2, comment1, comment2 };

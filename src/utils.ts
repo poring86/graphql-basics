@@ -19,7 +19,7 @@ const hashedPassword = async (password: string) => {
     if (password.length < 8) {
         throw new GraphQLYogaError("Password must be 8 characters or longer.");
     }
-    await hash(password, 10);
+    return await hash(password, 10);
 };
 
 const generateToken = (userId: string) => {

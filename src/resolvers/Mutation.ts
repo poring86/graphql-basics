@@ -284,6 +284,7 @@ const Mutation = {
 
             return comment;
         } catch (e) {
+            console.log(e);
             if (e instanceof PrismaClientKnownRequestError) {
                 if (e.code === "P2025") {
                     throw new GraphQLYogaError("Comment not found");

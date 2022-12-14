@@ -19,7 +19,7 @@ const rules = {
     }),
     isCommentOwner: rule()(async (_parent, args, { request, prisma }) => {
         const userId = getUserId(request);
-        const author = await prisma.comment
+        const author: any = await prisma.comment
             .findUnique({
                 where: {
                     id: args.id,

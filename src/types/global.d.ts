@@ -2,7 +2,7 @@ export interface UserType {
     id: string;
     name: string;
     email: string;
-    age?: number;
+    age?: number | null;
     password: string;
 }
 
@@ -24,7 +24,7 @@ export interface CommentType {
 export interface CreateUserInput {
     name: string;
     email: string;
-    age: number;
+    age?: number;
     password: string;
 }
 
@@ -38,6 +38,7 @@ export interface CreatePostInput {
     title: string;
     body: string;
     published: boolean;
+    userId?: string;
 }
 
 export interface UpdatePostInput {
@@ -56,8 +57,8 @@ export interface UpdateCommentInput {
 }
 
 export interface CreateUserResponse {
-    token: string;
-    user: UserType;
+    token?: string;
+    user?: UserType;
 }
 
 declare global {

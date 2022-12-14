@@ -1,6 +1,6 @@
 import "cross-fetch/polyfill";
 import { PrismaClient } from "@prisma/client";
-import { GraphQLClient, gql } from "graphql-request";
+import { GraphQLClient } from "graphql-request";
 import seedDatabase, { post1, post2 } from "./utils/seedDatabase";
 import { userOne } from "./utils/seedDatabase";
 import {
@@ -72,11 +72,11 @@ test("Should delete post", async () => {
 
     await client.request(deletePostMutation, variables);
 
-    const deletePost = await prisma.post.findUnique({
+    const deletetedPost = await prisma.post.findUnique({
         where: {
             id: post2.id,
         },
     });
 
-    expect(deletePost).toBe(null);
+    expect(deletetedPost).toBe(null);
 });

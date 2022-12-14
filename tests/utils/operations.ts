@@ -86,6 +86,15 @@ const profileQuery = gql`
     }
 `;
 
+const deleteCommentMutation = gql`
+    mutation ($id: ID!) {
+        deleteComment(id: $id) {
+            id
+            text
+        }
+    }
+`;
+
 export {
     postsQuery,
     myPostsQuery,
@@ -95,4 +104,5 @@ export {
     createUserMutation,
     loginMutation,
     profileQuery,
+    deleteCommentMutation,
 };
