@@ -9,13 +9,7 @@ import seedDatabase, {
 import { deleteCommentMutation } from "./utils/operations";
 
 const client = new GraphQLClient("http://127.0.0.1:4000/graphql");
-const prisma = new PrismaClient({
-    datasources: {
-        db: {
-            url: "postgresql://postgres:12345@localhost:5432/graphql_basics_test",
-        },
-    },
-});
+const prisma = new PrismaClient();
 
 beforeEach(seedDatabase);
 
